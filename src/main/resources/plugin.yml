@@ -1,0 +1,9 @@
+name: TKTowns
+main: io.github.wispoffates.minecraft.tktowns.TKTowns
+version: 0.0.1
+commands:
+  tktowns:
+    description: List current town information.
+    usage: /<command>
+    permission: tktowns.tktowns
+    permission-message: You do not have permission to tktowns.tktowns.
