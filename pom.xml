@@ -39,10 +39,10 @@
             <artifactId>VaultAPI</artifactId>
             <version>1.4</version>
         </dependency>
-        <dependency>
-			<groupId>me.ryanhamshire.GriefPrevention</groupId>
+		<dependency>
+			<groupId>GriefPrevention</groupId>
 			<artifactId>GriefPrevention</artifactId>
-			<version>8.1.9</version>
+			<version>8.2.3</version>
 		</dependency>
 	</dependencies>
 </project>

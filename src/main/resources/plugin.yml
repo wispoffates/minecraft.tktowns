@@ -7,3 +7,33 @@ commands:
     usage: /<command>
     permission: tktowns.tktowns
     permission-message: You do not have permission to tktowns.tktowns.
+  tkt:realestate:
+  	description: Create real estate plot from GP Claim.
+    usage: /<command> <real estate name>
+    permission: tktowns.realestate.create
+    permission-message: You do not have permission to tktowns.tktowns.
+  tkt:sell:
+  	description: Put real estate plot up for sale.
+    usage: /<command> <amount>
+    permission: tktowns.realestate.sell
+    permission-message: You do not have permission to tktowns.tktowns.
+  tkt:lease:
+  	description: Put real estate plot up for lease.
+    usage: /<command> <amount> <time interval>
+    permission: tktowns.realestate.lease
+    permission-message: You do not have permission to tktowns.tktowns.
+  tkt:buy:
+  	description: Buy/lease the real estate the player is standing in.
+    usage: /<command>
+    permission: tktowns.realestate.buy
+    permission-message: You do not have permission to tktowns.tktowns.
+   tkt:outpost:
+  	description: Create outpost for town.
+    usage: /<command> <town> <outpost name>
+    permission: tktowns.outpost
+    permission-message: You do not have permission to tktowns.tktowns.
+  tkt:market:
+  	description: List real estate for sale.
+    usage: /<command> [town]
+    permission: tktowns.realestate.sell
+    permission-message: You do not have permission to tktowns.tktowns. 
