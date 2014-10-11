@@ -15,6 +15,7 @@ public class TKTowns extends JavaPlugin {
     public static Economy econ = null;
     public static Permission perms = null;
     public static Chat chat = null;
+    public 
     
 	@Override
 	public void onEnable() {

@@ -31,7 +31,14 @@ public class Town {
 	}
 	
 	//TODO: Add better accessors here add,remove what not.
-
+	public void addChild(RealEstate re) {
+		this.children.put(re.getName(), re);
+	}
+	
+	public RealEstate getChild(String name) {
+		return this.children.get(name);
+	}
+	
 	protected void setChildren(Map<String, RealEstate> children) {
 		this.children = children;
 	}
