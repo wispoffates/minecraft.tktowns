@@ -6,6 +6,8 @@ import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -56,5 +58,28 @@ public class TKTowns extends JavaPlugin {
         RegisteredServiceProvider<Chat> rsp = getServer().getServicesManager().getRegistration(Chat.class);
         chat = rsp.getProvider();
         return chat != null;
+    }
+    
+    public boolean onCommand( CommandSender sender, Command cmd, String label, String[] args) {
+		//Lets make a frame breaking mod since they are weird 
+		if(cmd.getName().equalsIgnoreCase("tktowns") || cmd.getName().equalsIgnoreCase("tkt")) {
+			//TODO: Actually call the command
+			return true;
+		}
+		String cmdStr = cmd.getName().split("_")[1];
+		if(cmdStr.equalsIgnoreCase("realestate")) {
+			
+		} else if(cmdStr.equalsIgnoreCase("sell")) {
+			
+		} else if(cmdStr.equalsIgnoreCase("lease")) {
+			
+		} else if(cmdStr.equalsIgnoreCase("buy")) {
+			
+		} else if(cmdStr.equalsIgnoreCase("outpost")) {
+			
+		} else if(cmdStr.equalsIgnoreCase("market")) {
+			
+		}
+		return false;
     }
 }

@@ -2,6 +2,7 @@ package io.github.wispoffates.minecraft.tktowns;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class TownManager {
 	
@@ -37,5 +38,9 @@ public class TownManager {
 	
 	public Town getTown(String name) {
 		return this.towns.get(name);
+	}
+	
+	public Set<String> listTowns() {
+		return this.towns.keySet();
 	}
 }
