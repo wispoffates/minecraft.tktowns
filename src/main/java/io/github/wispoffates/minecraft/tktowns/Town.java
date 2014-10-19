@@ -1,7 +1,10 @@
 package io.github.wispoffates.minecraft.tktowns;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.bukkit.entity.Player;
@@ -9,7 +12,7 @@ import org.bukkit.entity.Player;
 import net.milkbowl.vault.economy.EconomyResponse;
 import me.ryanhamshire.GriefPrevention.Claim;
 
-//TODO Wrap Vault economy so we can throw exceptions here and keep log message and 
+//TODO Wrap Vault economy so we can throw exceptions here and keep log message and stuff in the Manager
 public class Town  extends RealEstate {
 	private static final Logger log = Logger.getLogger("Minecraft");
 	
@@ -17,6 +20,7 @@ public class Town  extends RealEstate {
 
 	protected Map<String, RealEstate> children;
 	protected Map<String, Outpost> outposts;
+	protected Set<UUID> residents;
 
 	/**
 	 * New Town constructor
@@ -27,6 +31,7 @@ public class Town  extends RealEstate {
 		super(claim,null,name);
 		this.children = new HashMap<String,RealEstate>();
 		this.outposts = new HashMap<String,Outpost>();
+		this.residents = new HashSet<UUID>();
 	}
 	
 	/**
@@ -113,5 +118,16 @@ public class Town  extends RealEstate {
 	protected void setChildren(Map<String, RealEstate> children) {
 		this.children = children;
 	}
+	
+	public void addResident(Player player) {
+		this.residents.add(player.getUniqueId());	
+	}
+	
+	public boolean isResident(Player player) {
+		return this.residents.contains(player.getUniqueId());
+	}
 
+	public void removeResident(Player player) {
+		this.residents.remove(player.getUniqueId());
+	}
 }

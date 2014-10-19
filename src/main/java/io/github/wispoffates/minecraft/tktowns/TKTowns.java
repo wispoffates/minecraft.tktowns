@@ -1,5 +1,7 @@
 package io.github.wispoffates.minecraft.tktowns;
 
+import io.github.wispoffates.minecraft.tktowns.datastore.DataStore;
+
 import java.util.logging.Logger;
 
 import net.milkbowl.vault.chat.Chat;
@@ -18,6 +20,7 @@ public class TKTowns extends JavaPlugin {
     public static Permission perms = null;
     public static Chat chat = null;
     public static TownManager townManager = null;
+    public static DataStore config = null;
     
 	@Override
 	public void onEnable() {
