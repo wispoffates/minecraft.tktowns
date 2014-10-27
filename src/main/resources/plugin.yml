@@ -2,38 +2,28 @@ name: TKTowns
 main: io.github.wispoffates.minecraft.tktowns.TKTowns
 version: 0.0.1
 commands:
-  tktowns:
-    description: List current town information.
-    usage: /<command>
-    permission: tktowns.tktowns
-    permission-message: You do not have permission to tktowns.tktowns.
+  tkt:
+    description: List help for TKTowns.
+	usage: /<command>
+    permission: tktowns.tkt
+    permission-message: You do not have permission to tktowns.tkt.
+  tkt_town:
+    description: List current town information. Create/Delete towns. Dontate/Withdraw from town bank.
+    usage: /<command> [list/create/delete/donate/withdraw]
+    permission: tktowns.town
+    permission-message: You do not have permission to tktowns.town.
   tkt_realestate:
-  	description: Create real estate plot from GP Claim.
-    usage: /<command> <real estate name>
-    permission: tktowns.realestate.create
-    permission-message: You do not have permission to tktowns.tktowns.
-  tkt_sell:
-  	description: Put real estate plot up for sale.
-    usage: /<command> <amount>
-    permission: tktowns.realestate.sell
-    permission-message: You do not have permission to tktowns.tktowns.
-  tkt_lease:
-  	description: Put real estate plot up for lease.
-    usage: /<command> <amount> <time interval>
-    permission: tktowns.realestate.lease
-    permission-message: You do not have permission to tktowns.tktowns.
-  tkt_buy:
-  	description: Buy/lease the real estate the player is standing in.
-    usage: /<command>
-    permission: tktowns.realestate.buy
-    permission-message: You do not have permission to tktowns.tktowns.
+  	description: List/Create/Sell/Lease/Buy real estate plot.
+    usage: /<command> <list/create/buy/sell/lease> <real estate name>
+    permission: tktowns.realestate
+    permission-message: You do not have permission to tktowns.realestate.
   tkt_outpost:
-  	description: Create outpost for town.
-    usage: /<command> <town> <outpost name>
+  	description: Create/Delete outposts for town.
+    usage: /<command> <create/delete> <outpost name>
     permission: tktowns.outpost
-    permission-message: You do not have permission to tktowns.tktowns.
-  tkt_market:
-  	description: List real estate for sale.
-    usage: /<command> [town]
-    permission: tktowns.realestate.sell
-    permission-message: You do not have permission to tktowns.tktowns. 
+    permission-message: You do not have permission to tktowns.outpost.
+  tkt_resident:
+  	description: List/add/delete Residents from your town.
+    usage: /<command> <add|remove|list> [player]
+    permission: tktowns.resident
+    permission-message: You do not have permission to tktowns.resident. 

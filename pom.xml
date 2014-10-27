@@ -41,8 +41,8 @@
         </dependency>
 		<dependency>
 			<groupId>GriefPrevention</groupId>
-			<artifactId>GiefPrevention</artifactId>
-			<version>8.4</version>
+			<artifactId>GriefPrevention</artifactId>
+			<version>8.2.3</version>
 		</dependency>
 	</dependencies>
 </project>

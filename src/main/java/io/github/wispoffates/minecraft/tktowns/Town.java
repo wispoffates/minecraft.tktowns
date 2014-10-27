@@ -21,6 +21,7 @@ public class Town  extends RealEstate {
 	protected Map<String, RealEstate> children;
 	protected Map<String, Outpost> outposts;
 	protected Set<UUID> residents;
+	protected UUID mayor;
 
 	/**
 	 * New Town constructor
@@ -129,5 +130,29 @@ public class Town  extends RealEstate {
 
 	public void removeResident(Player player) {
 		this.residents.remove(player.getUniqueId());
+	}
+	
+	public void setMayor(UUID player) {
+		this.mayor = player;
+	}
+	
+	public boolean isMayor(Player player) {
+		return this.mayor.equals(player.getUniqueId());
+	}
+	
+	public UUID getMayor() {
+		return this.mayor;
+	}
+	
+	public void addOutpost(Outpost out) {
+		this.outposts.put(out.getName(), out);
+	}
+	
+	public void removeOutpost(String name) {
+		this.outposts.remove(name);
+	}
+	
+	public Outpost getOutpost(String name) {
+		return this.outposts.get(name);
 	}
 }
