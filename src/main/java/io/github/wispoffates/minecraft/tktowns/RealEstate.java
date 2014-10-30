@@ -96,6 +96,12 @@ public class RealEstate {
 		//rent period set for 24 hours
 	}
 	
+	/**
+	 * 
+	 * @param leaseTime
+	 * @param downpayment
+	 * @param recurringCost
+	 */
 	public void lease(int leaseTime, double downpayment, double recurringCost) {
 		this.leaseTime = leaseTime;
 		this.recurringCost = recurringCost;

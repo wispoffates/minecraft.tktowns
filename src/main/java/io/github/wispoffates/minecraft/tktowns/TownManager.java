@@ -211,8 +211,7 @@ public class TownManager {
 			throw new TKTownsException("You do not own this RealEstate.");
 		}
 		try {
-			//TODO: don't hardcode this?
-			re.lease(Integer.parseInt(period), Double.parseDouble(amount));
+			re.lease(Integer.parseInt(period), Double.parseDouble(downpayment), Double.parseDouble(amount));
 		} catch(NumberFormatException e) {
 			throw new IllegalArgumentException("The amount must be a double ex: 20.5");
 		}
