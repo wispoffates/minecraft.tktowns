@@ -9,12 +9,12 @@ commands:
     permission-message: You do not have permission to tktowns.tkt.
   tkt_town:
     description: List current town information. Create/Delete towns. Dontate/Withdraw from town bank.
-    usage: /<command> [list/create/delete/donate/withdraw]
+    usage: /<command> [list/create/delete/donate/withdraw/balance]
     permission: tktowns.town
     permission-message: You do not have permission to tktowns.town.
   tkt_realestate:
-  	description: List/Create/Sell/Lease/Buy real estate plot.
-    usage: /<command> <list/create/buy/sell/lease> <real estate name>
+  	description: List/Create/Sell/Lease/Rent/Buy real estate plot.
+    usage: /<command> <list/create/buy/sell/lease/rent> <real estate name>
     permission: tktowns.realestate
     permission-message: You do not have permission to tktowns.realestate.
   tkt_outpost:

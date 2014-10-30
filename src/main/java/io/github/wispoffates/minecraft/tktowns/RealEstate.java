@@ -1,11 +1,21 @@
 package io.github.wispoffates.minecraft.tktowns;
 
+import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
+
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+
+import net.milkbowl.vault.economy.EconomyResponse;
+
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import me.ryanhamshire.GriefPrevention.Claim;
 
 public class RealEstate {
+	
+	public enum Status {
+		OWNED, RENTED, LEASED, FORSALE, FORRENT, FORLEASE, INDEFAULT
+	}
 	/**
 	 * Town this piece of real estate belongs too.
 	 */
@@ -13,12 +23,13 @@ public class RealEstate {
 
 	protected String name;
 	/**
-	 * Time unit to charge for the lease (1 day min).
+	 * Lease time is specified in number of days
 	 */
-	protected TimeUnit leaseTimeUnit = null;
-	protected int leaseTime = -1;
-	protected boolean isForSaleOrLease = false;
-	protected double cost;
+	protected int leaseTime = -1;			//how long does the lease last
+	protected int remainingDays = -1;		//how many days remain
+	protected double recurringCost;			//Recurring cost 
+	protected double downPayment;			//initial cost of the transaction
+	protected Status status = Status.OWNED;
 	/**
 	 * Owner of the plot. Null if the plot is server owned.
 	 */
@@ -67,40 +78,87 @@ public class RealEstate {
 	 * @param cost
 	 *            Cost of the lease.
 	 */
-	RealEstate(Claim claim, Town parent, String name, TimeUnit leaseTimeUnit, int leaseTime,
-			double cost) {
+	RealEstate(Claim claim, Town parent, String name,  int leaseTime, double downpayment, double recurringCost) {
 		this(claim, parent, name);
-		this.lease(leaseTimeUnit, leaseTime, cost);
+		this.lease(leaseTime, downpayment, recurringCost);
+		this.status = Status.FORLEASE;
 	}
 	
 	public void sell(double cost) {
-		this.cost = cost;
-		this.isForSaleOrLease = true;
+		this.downPayment = cost;
+		this.status = Status.FORSALE;
 	}
 	
-	public void lease(TimeUnit leaseTimeUnit, int leaseTime, double cost) {
-		if(leaseTimeUnit.compareTo(TimeUnit.DAYS) < 0) {
-			//TODO: Fail intelligently...
-		}
-		this.leaseTimeUnit = leaseTimeUnit;
+	public void rent(double downpayment, double recurringCost) {
+		this.recurringCost = recurringCost;
+		this.downPayment = downpayment;
+		this.status = Status.FORRENT;
+		//rent period set for 24 hours
+	}
+	
+	public void lease(int leaseTime, double downpayment, double recurringCost) {
 		this.leaseTime = leaseTime;
-		this.cost = cost;
-		this.isForSaleOrLease = true;
+		this.recurringCost = recurringCost;
+		this.downPayment = downpayment;
+		this.status = Status.FORLEASE;
 	}
 	
 	public void forclose() {
-		this.isForSaleOrLease = true;
+		this.status = Status.INDEFAULT;
 		if(this.parent != null) {
 			this.setOwner(this.parent.getOwner());
 		} else {
 			this.owner = null;
+			//TODO: set as admin claim or is owner null enough?
 		}
 	}
 
-	public void buy(UUID newOwner) {
-		this.isForSaleOrLease = false;
-		this.setOwner(newOwner);
-		//TODO: figure out how to charge for times leases probably in the real estate handlers.
+	public void buy(Player newOwner) throws TKTownsException {
+		EconomyResponse er = TKTowns.econ.withdrawPlayer(newOwner, this.downPayment);
+		if(!er.transactionSuccess()) {
+			throw new TKTownsException(er.errorMessage);
+		}
+		this.setOwner(newOwner.getUniqueId());
+		this.remainingDays = this.leaseTime;
+		switch(this.status) {
+			case FORRENT: {
+				this.setStatus(Status.RENTED);
+				break;
+			}
+			case FORLEASE: {
+				this.setStatus(Status.LEASED);
+				break;
+			}
+			case FORSALE: {
+				this.setStatus(Status.OWNED);
+				break;
+			}
+			default:  //should come to this
+				break;
+		}
+		
+	}
+	
+	public void collect() {
+		switch(this.status) {
+			case RENTED: {
+				Player player  = Bukkit.getPlayer(this.owner);
+				EconomyResponse er = TKTowns.econ.withdrawPlayer(player, this.downPayment);
+				if(!er.transactionSuccess()) {
+					this.forclose();
+				}
+				break;
+			}
+			case LEASED: { //cheat here to decrement lease day
+				this.remainingDays--;
+				if(this.remainingDays<0) { //foreclose
+					this.forclose();
+				}
+				break;
+			}
+			default:  //only rent is collected on the 24 hour boundary
+				break;
+		}
 	}
 	
 	//Getters and setters ---------------------------------------------------------------------------
@@ -121,14 +179,6 @@ public class RealEstate {
 		this.name = name;
 	}
 
-	public TimeUnit getLeaseTimeUnit() {
-		return leaseTimeUnit;
-	}
-
-	public void setLeaseTimeUnit(TimeUnit leaseTimeUnit) {
-		this.leaseTimeUnit = leaseTimeUnit;
-	}
-
 	public int getLeaseTime() {
 		return leaseTime;
 	}
@@ -137,14 +187,22 @@ public class RealEstate {
 		this.leaseTime = leaseTime;
 	}
 
-	public double getCost() {
-		return cost;
+	public double getRecurringCost() {
+		return this.recurringCost;
 	}
 
-	public void setCost(double cost) {
-		this.cost = cost;
+	public void setRecurringCost(double cost) {
+		this.recurringCost = cost;
 	}
 
+	public double getDownPayment() {
+		return this.downPayment;
+	}
+	
+	public void setDownPayment(double downpayment) {
+		this.downPayment = downpayment;
+	}
+	
 	public UUID getOwner() {
 		return owner;
 	}
@@ -152,6 +210,14 @@ public class RealEstate {
 	public void setOwner(UUID owner) {
 		this.owner = owner;
 		this.claim.ownerID = owner; //change gp claim owner;
+	}
+	
+	public void setStatus(Status nStatus) {
+		this.status = nStatus;
+	}
+	
+	public Status getStatus() {
+		return this.status;
 	}
 
 }

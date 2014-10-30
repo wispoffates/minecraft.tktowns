@@ -77,6 +77,7 @@ public class TKTowns extends JavaPlugin {
 			if(cmdStr.equalsIgnoreCase("tkt")) {
 				//TODO: List help.
 				player.sendMessage("No help here yet... but soom (tm)");
+				return true;
 			} else if(cmdStr.equalsIgnoreCase("tkt_town")) {
 				//[list/create/delete/deposit/withdraw]
 				if(args.length == 0) {
@@ -86,24 +87,38 @@ public class TKTowns extends JavaPlugin {
 					Set<String> towns = TKTowns.townManager.listTowns(player);
 					player.sendMessage(TownManager.TKTOWNS_HEADER);
 					player.sendMessage("Towns: " + TKTowns.collectionToString(towns));
-					return true;
 				} else if(args[0].equalsIgnoreCase("create")) {
 					TKTowns.townManager.createTown(player,argsList.get(0));
+					player.sendMessage("Town created.");
 				} else if(args[0].equalsIgnoreCase("delete")) {
 					TKTowns.townManager.deleteTown(player,argsList.get(0));
+					player.sendMessage("Town deleted.");
 				} else if(args[0].equalsIgnoreCase("deposit")) {
-					if(argsList.size()>1)
+					if(argsList.size()>1) {
 						TKTowns.townManager.depositTown(player,argsList.get(0),argsList.get(1));
-					else
+					} else {
 						TKTowns.townManager.depositTown(player,null,argsList.get(0));
+					}
+					player.sendMessage("Deposit made.");
 				} else if(args[0].equalsIgnoreCase("withdraw")) {
-					if(argsList.size()>1)
+					if(argsList.size()>1) {
 						TKTowns.townManager.withdrawTown(player,argsList.get(0),argsList.get(1));
-					else
+					} else {
 						TKTowns.townManager.withdrawTown(player,null,argsList.get(0));
+					}
+					player.sendMessage("Withdraw made.");
+				} else if(args[0].equalsIgnoreCase("balance")) {
+					double bal = -1;
+					if(argsList.size()>1) {
+						bal = TKTowns.townManager.getBalance(player,argsList.get(0),argsList.get(1));
+					} else {
+						bal = TKTowns.townManager.getBalance(player,null,argsList.get(0));
+					}
+					player.sendMessage("Balance: +" + bal); 
 				} else {
 					TKTowns.townManager.listTownInfo(player,argsList.get(0));
 				}
+				return true;
 			} else if(cmdStr.equalsIgnoreCase("tkt_realestate")) {
 				//[List/Create/Sell/Lease/Buy]
 				if(args.length == 0) {
@@ -112,41 +127,67 @@ public class TKTowns extends JavaPlugin {
 					TKTowns.townManager.listRealestate(player, argsList.get(0));
 				} else if(args[0].equalsIgnoreCase("create")) {
 					TKTowns.townManager.createRealestate(player, argsList.get(0));
+					player.sendMessage("Real Estate created.");
 				} else if(args[0].equalsIgnoreCase("sell")) {
 					TKTowns.townManager.sellRealestate(player, argsList.get(0));
+					player.sendMessage("Real Estate put up for sale.");
 				} else if(args[0].equalsIgnoreCase("lease")) {
 					TKTowns.townManager.leaseRealestate(player, argsList.get(0),argsList.get(1), argsList.get(2));
+					player.sendMessage("Real Estate put up for lease.");
+				} else if(args[0].equalsIgnoreCase("rent")) {
+					TKTowns.townManager.rentRealestate(player, argsList.get(0),argsList.get(1), argsList.get(2));
+					player.sendMessage("Real Estate put up for rent.");
 				} else if(args[0].equalsIgnoreCase("buy")) {
 					TKTowns.townManager.buyRealestate(player);
+					player.sendMessage("Congratulations you now own this Real Estate.");
 				} else {
 					TKTowns.townManager.listRealestate(player, argsList.get(0));
 				}
+				return true;
 			} else if(cmdStr.equalsIgnoreCase("tkt_outpost")) {
 				//[Create/Delete]
 				if(args.length == 0) {
-					TKTowns.townManager.listOutposts();
+					Set<Outpost> outposts = TKTowns.townManager.listOutposts(player);
+					StringBuilder sb = new StringBuilder();
+					sb.append("Outposts: ");
+					for(Outpost out : outposts) {
+						sb.append(out.getName() + " ");
+					}
+					player.sendMessage(sb.toString());
 				} else if(args[0].equalsIgnoreCase("create")) {
 					TKTowns.townManager.createOutpost(player,argsList.get(0));
+					player.sendMessage("Outpost created.");
 				} else if(args[0].equalsIgnoreCase("delete")) {
 					TKTowns.townManager.deleteOutpost(player,argsList.get(0));
+					player.sendMessage("Outpost deleted.");
 				}
-				
+				return true;
 			} else if(cmdStr.equalsIgnoreCase("tkt_resident")) {
 				//[List/add/delete]
 				if(args.length == 0) {
-					TKTowns.townManager.listResidents(player, null);
+					Set<Player> residents = TKTowns.townManager.listResidents(player, null);
+					StringBuilder sb = new StringBuilder();
+					sb.append("Residents: ");
+					for(Player res : residents) {
+						sb.append(res.getName() + " ");
+					}
+					player.sendMessage(sb.toString());
 				} else if(args[0].equalsIgnoreCase("list")) {
 					TKTowns.townManager.listResidents(player,argsList.get(0));
 				} else if(args[0].equalsIgnoreCase("add")) {
 					TKTowns.townManager.addResident(player,argsList.get(0));
+					player.sendMessage("Resident added.");
 				} else if(args[0].equalsIgnoreCase("delete")) {
 					TKTowns.townManager.deleteResident(player,argsList.get(0));
+					player.sendMessage("Resident delted.");
 				}
+				return true;
 			}
 		} catch (Exception e) {
 			Player player = (Player) sender;
 			player.sendMessage(TownManager.TKTOWNS_HEADER);
 			player.sendMessage(e.getMessage());
+			return true;
 		}
 		return false;
     }
@@ -159,4 +200,13 @@ public class TKTowns extends JavaPlugin {
 		
 		return sb.toString().substring(0, sb.length()-2);
 	}
+    
+    protected static String formatRealestate(Set<RealEstate> realestate) {
+    	
+    }
+    
+    protected static String formatRealestate(RealEstate realestate) {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append(str)
+    }
 }

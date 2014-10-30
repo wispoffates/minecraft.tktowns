@@ -92,7 +92,7 @@ public class TownManager {
 		
 		Town town = null;
 		if(name == null) {
-			town = this.getPlayerTown(player);
+			town = this.getTownMayorOf(player);
 		} else {
 			town = this.towns.get(name);
 		}
@@ -126,7 +126,7 @@ public class TownManager {
 		
 		Town town = null;
 		if(name == null) {
-			town = this.getPlayerTown(player);
+			town = this.getTownMayorOf(player);
 		} else {
 			town = this.towns.get(name);
 		}
@@ -163,7 +163,7 @@ public class TownManager {
 		// TODO Check to make sure they want to put their Town up for sale (protection against standing in the wrong claim)
 		// TODO Make sure it is not all ready a RealEstate.
 		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), true, null);
-		Town town = this.getPlayerTown(player);
+		Town town = this.getTownMayorOf(player);
 		if(claim == null) {
 			throw new TKTownsException("You are not standing in a GriefPrevention claim.");
 		}
@@ -199,8 +199,8 @@ public class TownManager {
 		}
 	}
 
-	public void leaseRealestate(Player player, String amount, String period, String timeUnit) throws TKTownsException, IllegalArgumentException {
-		if(amount == null || period == null || timeUnit == null) {
+	public void leaseRealestate(Player player, String amount, String downpayment, String period) throws TKTownsException, IllegalArgumentException {
+		if(amount == null || period == null || downpayment == null) {
 			throw new IllegalArgumentException("Amount must be specified.");
 		}
 		RealEstate re = this.getRealEstateAtPlayerLocation(player);
@@ -212,7 +212,7 @@ public class TownManager {
 		}
 		try {
 			//TODO: don't hardcode this?
-			re.lease(TimeUnit.DAYS, Integer.parseInt(period), Double.parseDouble(amount));
+			re.lease(Integer.parseInt(period), Double.parseDouble(amount));
 		} catch(NumberFormatException e) {
 			throw new IllegalArgumentException("The amount must be a double ex: 20.5");
 		}
@@ -224,16 +224,20 @@ public class TownManager {
 		if(re == null) {
 			throw new TKTownsException("Your are not standing in a piece of RealEstate.");
 		}
-		re.buy(player.getUniqueId());
+		re.buy(player);
 	}
 
-	public Set<Outpost> listOutposts() {
-		// TODO Get all towns they are a resident of and list their outposts
-		return null;
+	public Set<Outpost> listOutposts(Player player) {
+		Set<Outpost> outposts = new HashSet<Outpost>();
+		Set<Town> towns = this.getTownsAPlayerIsResident(player);
+		for(Town town : towns) {
+			outposts.addAll(town.outposts.values());
+		}
+		return outposts;
 	}
 
 	public void createOutpost(Player player, String name) throws TKTownsException {
-		Town town = this.getPlayerTown(player);
+		Town town = this.getTownMayorOf(player);
 		if(town == null || !town.isMayor(player)) {
 			throw new TKTownsException("Only the mayor of a town can create outposts.");
 		}
@@ -256,7 +260,7 @@ public class TownManager {
 	public Set<Player> listResidents(Player player, String name) throws TownNotFoundException {
 		Town town = null;
 		if(name == null) {
-			town = this.getPlayerTown(player);
+			town = this.getTownMayorOf(player);
 		} else {
 			town = this.towns.get(name);
 		}
@@ -268,7 +272,7 @@ public class TownManager {
 	}
 
 	public void addResident(Player player, String name) throws TKTownsException {
-		Town town = this.getPlayerTown(player);
+		Town town = this.getTownMayorOf(player);
 		Player resident = Bukkit.getPlayer(name);
 		if(town == null || !town.isMayor(player)) {
 			throw new TKTownsException("Only the mayor of a town can add residents.");
@@ -280,7 +284,7 @@ public class TownManager {
 	}
 
 	public void deleteResident(Player player, String name) throws TKTownsException {
-		Town town = this.getPlayerTown(player);
+		Town town = this.getTownMayorOf(player);
 		Player resident = Bukkit.getPlayer(name);
 		if(town == null || !town.isMayor(player)) {
 			throw new TKTownsException("Only the mayor of a town can remove residents.");
@@ -291,27 +295,68 @@ public class TownManager {
 		town.removeResident(resident);	
 	}
 	
-	protected Town getPlayerTown(Player player) {
-		//TODO: actually implement this...
-		return null;
+	protected Town getTownMayorOf(Player player) {
+		Town ret = null;
+		for(Town town: this.towns.values()) {
+			if(town.isMayor(player)) {
+				ret = town;
+			}
+		}
+		return ret;
 	}
 	
 	protected Town getTownAtPlayerLocation(Player player) {
-		//TODO: actually implement this...
-		return null;
+		Town ret = null;
+		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), true, null);
+		for(Town town : this.towns.values()) {
+			if(town.claim.getID() == claim.getID() || town.claim.getID() == claim.parent.getID()) {
+				ret = town;
+			}
+		}
+		return ret;
 	}
 	
 	protected RealEstate getRealEstateAtPlayerLocation(Player player) {
-		//TODO: actually implement this...
-		return null;
+		//n^2
+		RealEstate ret = null;
+		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), true, null);
+		for(Town town : this.towns.values()) {
+			for(RealEstate re : town.getChildren().values()) {
+				if(re.claim.getID() == claim.getID() || re.claim.getID() == claim.parent.getID()) {
+					ret = re;
+				}
+			}
+		}
+		return ret;
+	}
+	
+	protected Set<Town> getTownsAPlayerIsResident( Player player ) {
+		Set<Town> towns = new HashSet<Town>();
+		for(Town town: this.towns.values()) {
+			if(town.isResident(player)) {
+				towns.add(town);
+			}
+		}
+		return towns;
 	}
 	
 	protected Set<RealEstate> getForSale(Town town) {
 		Set<RealEstate> ret = new HashSet<RealEstate>();
 		for(RealEstate re : town.getChildren().values()) {
-			if(re.isForSaleOrLease)
+			if(re.getStatus() == RealEstate.Status.FORLEASE || re.getStatus() == RealEstate.Status.FORRENT || re.getStatus() == RealEstate.Status.FORSALE)
 				ret.add(re);
 		}
 		return ret;
+	}
+
+	public double getBalance(Player player, String string, String string2) {
+		// TODO Auto-generated method stub
+		return 0.0;
+	}
+
+	public void rentRealestate(Player player, String string, String string2,
+			String string3) {
+		// TODO Auto-generated method stub
+		
 	}
 }

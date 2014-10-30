@@ -20,7 +20,7 @@ public class Town  extends RealEstate {
 
 	protected Map<String, RealEstate> children;
 	protected Map<String, Outpost> outposts;
-	protected Set<UUID> residents;
+	protected Set<Player> residents;
 	protected UUID mayor;
 
 	/**
@@ -32,7 +32,7 @@ public class Town  extends RealEstate {
 		super(claim,null,name);
 		this.children = new HashMap<String,RealEstate>();
 		this.outposts = new HashMap<String,Outpost>();
-		this.residents = new HashSet<UUID>();
+		this.residents = new HashSet<Player>();
 	}
 	
 	/**
@@ -121,7 +121,7 @@ public class Town  extends RealEstate {
 	}
 	
 	public void addResident(Player player) {
-		this.residents.add(player.getUniqueId());	
+		this.residents.add(player);	
 	}
 	
 	public boolean isResident(Player player) {
