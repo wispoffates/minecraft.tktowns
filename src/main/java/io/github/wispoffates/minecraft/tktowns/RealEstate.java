@@ -226,4 +226,44 @@ public class RealEstate {
 		return this.status;
 	}
 
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		if(this.parent != null) {
+			sb.append("Real Estate: " + this.name + " in " + parent.getName() + " ");
+		} else {
+			sb.append("Town:" + this.name + " ");
+		}
+		switch(this.status) {
+			case FORSALE: {
+				sb.append("is for sale! $" + this.downPayment);
+				break;
+			}
+			case FORRENT: {
+				sb.append("is for rent! Downpayment:" + this.downPayment + " and " + this.recurringCost + " per day.");
+				break;
+			}
+			case FORLEASE: {
+				sb.append("is available to lease! Downpayment:" + this.downPayment + " Period:" + this.leaseTime + " days");
+				break;
+			}
+			case OWNED: {
+				sb.append("owned by " + Bukkit.getPlayer(this.owner).getName());
+				break;
+			}
+			case RENTED: { 
+				sb.append("rented by " + Bukkit.getPlayer(this.owner).getName());
+				break;			
+			}
+			case LEASED: {
+				sb.append("leased by " + Bukkit.getPlayer(this.owner).getName());
+				break;
+			}
+			case INDEFAULT: {
+				sb.append("is in default!");
+				break;
+			}
+		}
+		return sb.toString();
+	}
+	
 }

@@ -1,5 +1,6 @@
 package io.github.wispoffates.minecraft.tktowns;
 
+import io.github.wispoffates.minecraft.tktowns.RealEstate.Status;
 import io.github.wispoffates.minecraft.tktowns.datastore.DataStore;
 
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -58,13 +60,17 @@ public class TKTowns extends JavaPlugin {
 
     private boolean setupPermissions() {
         RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
-        perms = rsp.getProvider();
+        if(rsp != null) {
+        	perms = rsp.getProvider();
+        }
         return perms != null;
     }
     
     private boolean setupChat() {
         RegisteredServiceProvider<Chat> rsp = getServer().getServicesManager().getRegistration(Chat.class);
-        chat = rsp.getProvider();
+        if(rsp != null) {
+        	chat = rsp.getProvider();
+        }
         return chat != null;
     }
     
@@ -81,7 +87,8 @@ public class TKTowns extends JavaPlugin {
 			} else if(cmdStr.equalsIgnoreCase("tkt_town")) {
 				//[list/create/delete/deposit/withdraw]
 				if(args.length == 0) {
-					TKTowns.townManager.listTownInfo(player, null);
+					Town town = TKTowns.townManager.listTownInfo(player, null);
+					player.sendMessage(TKTowns.formatTown(town));
 				} else if(args[0].equalsIgnoreCase("list")) {
 					//List all the towns
 					Set<String> towns = TKTowns.townManager.listTowns(player);
@@ -110,9 +117,9 @@ public class TKTowns extends JavaPlugin {
 				} else if(args[0].equalsIgnoreCase("balance")) {
 					double bal = -1;
 					if(argsList.size()>1) {
-						bal = TKTowns.townManager.getBalance(player,argsList.get(0),argsList.get(1));
+						bal = TKTowns.townManager.getBalance(player);
 					} else {
-						bal = TKTowns.townManager.getBalance(player,null,argsList.get(0));
+						bal = TKTowns.townManager.getBalance(player);
 					}
 					player.sendMessage("Balance: +" + bal); 
 				} else {
@@ -135,7 +142,7 @@ public class TKTowns extends JavaPlugin {
 					TKTowns.townManager.leaseRealestate(player, argsList.get(0),argsList.get(1), argsList.get(2));
 					player.sendMessage("Real Estate put up for lease.");
 				} else if(args[0].equalsIgnoreCase("rent")) {
-					TKTowns.townManager.rentRealestate(player, argsList.get(0),argsList.get(1), argsList.get(2));
+					TKTowns.townManager.rentRealestate(player, argsList.get(0),argsList.get(1));
 					player.sendMessage("Real Estate put up for rent.");
 				} else if(args[0].equalsIgnoreCase("buy")) {
 					TKTowns.townManager.buyRealestate(player);
@@ -201,12 +208,22 @@ public class TKTowns extends JavaPlugin {
 		return sb.toString().substring(0, sb.length()-2);
 	}
     
-    protected static String formatRealestate(Set<RealEstate> realestate) {
-    	
+    protected static String formatRealestate(Set<RealEstate> realestate, boolean onlyAvailable) {
+    	StringBuilder sb = new StringBuilder();
+    	for(RealEstate re : realestate) {
+    		if(!onlyAvailable || (re.getStatus() == Status.FORLEASE || re.getStatus() == Status.FORSALE || re.getStatus() == Status.FORRENT)) {
+    			sb.append(re.toString()).append("\n"); 
+    		}
+    	}
+    	return sb.toString();
     }
     
-    protected static String formatRealestate(RealEstate realestate) {
+    protected static String formatTown(Town town) {
     	StringBuilder sb = new StringBuilder();
-    	sb.append(str)
+    	sb.append("------------" + town.getName() + "--------------").append("\n");
+    	sb.append("Mayor: " + Bukkit.getPlayer(town.getOwner())).append("\n");
+    	sb.append("Residents: " + town.countResidents()).append("\n");
+    	
+    	return sb.toString();
     }
 }

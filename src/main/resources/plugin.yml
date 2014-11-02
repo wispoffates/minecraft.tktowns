@@ -4,7 +4,7 @@ version: 0.0.1
 commands:
   tkt:
     description: List help for TKTowns.
-	usage: /<command>
+    usage: /<command>
     permission: tktowns.tkt
     permission-message: You do not have permission to tktowns.tkt.
   tkt_town:
@@ -13,17 +13,17 @@ commands:
     permission: tktowns.town
     permission-message: You do not have permission to tktowns.town.
   tkt_realestate:
-  	description: List/Create/Sell/Lease/Rent/Buy real estate plot.
+    description: List/Create/Sell/Lease/Rent/Buy real estate plot.
     usage: /<command> <list/create/buy/sell/lease/rent> <real estate name>
     permission: tktowns.realestate
     permission-message: You do not have permission to tktowns.realestate.
   tkt_outpost:
-  	description: Create/Delete outposts for town.
+    description: Create/Delete outposts for town.
     usage: /<command> <create/delete> <outpost name>
     permission: tktowns.outpost
     permission-message: You do not have permission to tktowns.outpost.
   tkt_resident:
-  	description: List/add/delete Residents from your town.
+    description: List/add/delete Residents from your town.
     usage: /<command> <add|remove|list> [player]
     permission: tktowns.resident
     permission-message: You do not have permission to tktowns.resident. 

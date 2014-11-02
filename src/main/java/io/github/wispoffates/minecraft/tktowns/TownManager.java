@@ -3,18 +3,15 @@ package io.github.wispoffates.minecraft.tktowns;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TownNotFoundException;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 public class TownManager {
@@ -160,8 +157,10 @@ public class TownManager {
 	}
 
 	public void createRealestate(Player player, String name) throws TKTownsException {
-		// TODO Check to make sure they want to put their Town up for sale (protection against standing in the wrong claim)
-		// TODO Make sure it is not all ready a RealEstate.
+		// TODO Check to make sure they want to put their Town up for sale (protection against standing in the wrong claim
+		if(this.getRealEstateAtPlayerLocation(player) != null) {
+			throw new TKTownsException("This is all ready a piece of Real Estate.");
+		}
 		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), true, null);
 		Town town = this.getTownMayorOf(player);
 		if(claim == null) {
@@ -217,6 +216,25 @@ public class TownManager {
 		}
 		//TODO: Do that scheduling thing
 	}
+	
+	public void rentRealestate(Player player, String downpayment, String reaccuring) throws TKTownsException, IllegalArgumentException {
+		if(reaccuring == null ||  downpayment == null) {
+			throw new IllegalArgumentException("Amount must be specified.");
+		}
+		RealEstate re = this.getRealEstateAtPlayerLocation(player);
+		if(re == null) {
+			throw new TKTownsException("Your are not standing in a piece of RealEstate.");
+		}
+		if(!re.getOwner().equals(player.getUniqueId())) {
+			throw new TKTownsException("You do not own this RealEstate.");
+		}
+		try {
+			re.rent(Double.parseDouble(downpayment), Double.parseDouble(reaccuring));
+		} catch(NumberFormatException e) {
+			throw new IllegalArgumentException("The amount must be a double ex: 20.5");
+		}
+		
+	}
 
 	public void buyRealestate(Player player) throws TKTownsException {
 		RealEstate re = this.getRealEstateAtPlayerLocation(player);
@@ -251,8 +269,17 @@ public class TownManager {
 		town.addOutpost(out);
 	}
 
-	public void deleteOutpost(Player player, String name) {
-		// TODO Auto-generated method stub
+	public void deleteOutpost(Player player, String name) throws TKTownsException {
+		RealEstate re = this.getRealEstateAtPlayerLocation(player);
+		if(re instanceof Outpost) {
+			Outpost out = (Outpost) re;
+			if(!out.parent.isMayor(player)) {
+				throw new TKTownsException("Only the mayor can delete an outpost.");
+			}
+			out.parent.removeOutpost(out.getName());
+		} else {
+			throw new TKTownsException("You are not standing in an outpost.");
+		}
 		
 	}
 
@@ -347,15 +374,14 @@ public class TownManager {
 		}
 		return ret;
 	}
-
-	public double getBalance(Player player, String string, String string2) {
-		// TODO Auto-generated method stub
-		return 0.0;
+	
+	public double getBalance(Player player) throws TKTownsException {
+		Town town = this.getTownMayorOf(player);
+		if(town == null) {
+			throw new TKTownsException("Only the mayor of a town can check the bank balance.");
+		}
+		return town.getBankBalance(player);
 	}
 
-	public void rentRealestate(Player player, String string, String string2,
-			String string3) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 }
