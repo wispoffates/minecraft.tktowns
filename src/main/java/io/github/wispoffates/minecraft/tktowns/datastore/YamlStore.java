@@ -1,53 +1,160 @@
 package io.github.wispoffates.minecraft.tktowns.datastore;
 
+import io.github.wispoffates.minecraft.tktowns.Town;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class YamlStore implements DataStore {
+import org.bukkit.configuration.file.FileConfiguration;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import de.schlichtherle.io.File;
+import de.schlichtherle.io.FileOutputStream;
+
+public class YamlStore implements DataStore {
+	
+	final static String CONFIG_FILE = "tktowns.json";
+	
+	protected transient String configDir;
+	protected transient Gson gson;
+	protected transient GeneralConfig gconf;
+	
+	
+	public YamlStore(FileConfiguration config) {
+		this.configDir = config.getCurrentPath();
+		gson = new GsonBuilder().setPrettyPrinting().create();
+		File generalConfigFile = new File(this.configDir,CONFIG_FILE);
+		if(!generalConfigFile.exists()) {
+			//Config file doesn't exist probably first launch... lets right something out
+			this.gconf = new GeneralConfig();
+			jsonToFile(this.gconf,CONFIG_FILE);
+		} else {
+			this.gconf = jsonFromFile(CONFIG_FILE,GeneralConfig.class);
+		}
+		
+	}
+	
+	private void jsonToFile(Object config, String relativePath) {
+		FileOutputStream outputStream = null;
+		try { 
+			  String output = gson.toJson(config);
+			  outputStream = new FileOutputStream(new File(this.configDir,relativePath));
+			  outputStream.write(output.getBytes());
+			} catch (Exception e) {
+			  e.printStackTrace();
+			} finally {
+				if(outputStream != null)
+					try {
+						outputStream.close();
+					} catch (IOException e) {
+						//Don't care
+					}
+			}
+	}
+	
+	private <T extends Object> T jsonFromFile(String relativePath, Class<T> type) {
+		FileInputStream inputStream = null;
+		BufferedReader bufferedReader = null;
+		T ret = null;
+		try {
+			inputStream = new FileInputStream(new File(this.configDir,relativePath));
+			InputStreamReader isr = new InputStreamReader(inputStream);
+			bufferedReader = new BufferedReader(isr);
+			StringBuilder sb = new StringBuilder();
+			String line;
+			while ((line = bufferedReader.readLine()) != null) {
+				sb.append(line);
+			}
+			String json = sb.toString();
+			ret = gson.fromJson(json, type);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (bufferedReader != null)
+					bufferedReader.close();
+				if (inputStream != null)
+					inputStream.close();
+			} catch (IOException e) {
+				// Don't care
+			}
+		}
+		return ret;
+	}
+	
 	@Override
 	public int townCost() {
-		// TODO Auto-generated method stub
-		return 0;
+		return gconf.townCost;
 	}
 
 	@Override
 	public void townCost(int cost) {
-		// TODO Auto-generated method stub
-		
+		gconf.townCost = cost;
+		jsonToFile(this.gconf,CONFIG_FILE);
 	}
 
 	@Override
 	public int townUpkeepInterval() {
-		// TODO Auto-generated method stub
-		return 0;
+		return gconf.townUpkeepInterval;
 	}
 
 	@Override
 	public void townUpkeepInterval(int interval) {
-		// TODO Auto-generated method stub
-		
+		gconf.townUpkeepInterval = interval;
+		jsonToFile(this.gconf,CONFIG_FILE);
 	}
 
 	@Override
 	public TimeUnit townUpkeepUnit() {
-		// TODO Auto-generated method stub
-		return null;
+		return gconf.townUpkeepUnit;
 	}
 
 	@Override
 	public void townUpkeepUnit(TimeUnit unit) {
+		gconf.townUpkeepUnit = unit;
+		jsonToFile(this.gconf,CONFIG_FILE);
+	}
+
+	@Override
+	public int townUpkeepCost() {
+		return gconf.townUpkeepCost;
+	}
+
+	@Override
+	public void townUpkeepCost(int cost) {
+		gconf.townUpkeepCost = cost;
+		jsonToFile(this.gconf,CONFIG_FILE);
+	}
+
+	@Override
+	public Map<String, Town> loadTowns() {
+		Map<String, Town> towns = new HashMap<String, Town>();
+		File townsDir = new File(this.configDir,"towns");
+		if(townsDir.exists() && townsDir.isDirectory()) {  //Only need to load anything if the directory is there
+			String[] files = townsDir.list();
+			for(String file : files) {
+				towns.put(key, jsonFromFile(file,Town.class));
+			}
+			// TODO Auto-generated method stub
+		}
+		return towns;
+	}
+
+	@Override
+	public void saveTowns(Map<String, Town> towns) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public int getTownUpkeepCost() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void setTownUpkeepCost(int cost) {
+	public void saveTown(String name, Town town) {
 		// TODO Auto-generated method stub
 		
 	}

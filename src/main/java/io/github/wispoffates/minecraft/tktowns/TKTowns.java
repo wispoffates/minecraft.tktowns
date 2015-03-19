@@ -31,6 +31,8 @@ public class TKTowns extends JavaPlugin {
     
 	@Override
 	public void onEnable() {
+		this.getConfig().options().copyDefaults(true);
+		this.saveConfig();
 		if (!setupEconomy() ) {
             log.severe(String.format("[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
             getServer().getPluginManager().disablePlugin(this);
@@ -39,7 +41,7 @@ public class TKTowns extends JavaPlugin {
         setupPermissions();
         setupChat();
         
-        TKTowns.townManager = new TownManager();
+        TKTowns.townManager = new TownManager(this.getConfig());
         
         log.info(String.format("[%s] Eanbled Version %s", getDescription().getName(), getDescription().getVersion()));
 	}
@@ -87,7 +89,7 @@ public class TKTowns extends JavaPlugin {
 				//TODO: List help.
 				player.sendMessage("No help here yet... but soom (tm)");
 				return true;
-			} else if(cmdStr.equalsIgnoreCase("tkt_town")) {
+			} else if(cmdStr.equalsIgnoreCase("tkt_town") || cmdStr.equalsIgnoreCase("tktown")) {
 				//[list/create/delete/deposit/withdraw]
 				if(args.length == 0) {
 					Town town = TKTowns.townManager.listTownInfo(player, null);
@@ -129,10 +131,11 @@ public class TKTowns extends JavaPlugin {
 					TKTowns.townManager.listTownInfo(player,argsList.get(1));
 				}
 				return true;
-			} else if(cmdStr.equalsIgnoreCase("tkt_realestate")) {
+			} else if(cmdStr.equalsIgnoreCase("tkt_realestate") || cmdStr.equalsIgnoreCase("tkreal")) {
 				//[List/Create/Sell/Lease/Buy]
 				if(args.length == 0) {
-					TKTowns.townManager.listRealestate(player, null);
+					Set<RealEstate> re = TKTowns.townManager.listRealestate(player, null);
+					player.sendMessage(TKTowns.formatRealestate(re, false));
 				} else if(args[0].equalsIgnoreCase("list")) {
 					TKTowns.townManager.listRealestate(player, argsList.get(1));
 				} else if(args[0].equalsIgnoreCase("create")) {
@@ -151,10 +154,11 @@ public class TKTowns extends JavaPlugin {
 					TKTowns.townManager.buyRealestate(player);
 					player.sendMessage("Congratulations you now own this Real Estate.");
 				} else {
-					TKTowns.townManager.listRealestate(player, argsList.get(1));
+					Set<RealEstate> re = TKTowns.townManager.listRealestate(player, argsList.get(1));
+					player.sendMessage(TKTowns.formatRealestate(re, false));
 				}
 				return true;
-			} else if(cmdStr.equalsIgnoreCase("tkt_outpost")) {
+			} else if(cmdStr.equalsIgnoreCase("tkt_outpost") || cmdStr.equalsIgnoreCase("tkout")) {
 				//[Create/Delete]
 				if(args.length == 0) {
 					Set<Outpost> outposts = TKTowns.townManager.listOutposts(player);
@@ -172,7 +176,7 @@ public class TKTowns extends JavaPlugin {
 					player.sendMessage("Outpost deleted.");
 				}
 				return true;
-			} else if(cmdStr.equalsIgnoreCase("tkt_resident")) {
+			} else if(cmdStr.equalsIgnoreCase("tkt_resident") || cmdStr.equalsIgnoreCase("tkres")) {
 				//[List/add/delete]
 				if(args.length == 0) {
 					Set<Player> residents = TKTowns.townManager.listResidents(player, null);
@@ -183,7 +187,13 @@ public class TKTowns extends JavaPlugin {
 					}
 					player.sendMessage(sb.toString());
 				} else if(args[0].equalsIgnoreCase("list")) {
-					TKTowns.townManager.listResidents(player,argsList.get(1));
+					Set<Player> residents = TKTowns.townManager.listResidents(player,argsList.get(1));
+					StringBuilder sb = new StringBuilder();
+					sb.append("Residents: ");
+					for(Player res : residents) {
+						sb.append(res.getName() + " ");
+					}
+					player.sendMessage(sb.toString());
 				} else if(args[0].equalsIgnoreCase("add")) {
 					TKTowns.townManager.addResident(player,argsList.get(1));
 					player.sendMessage("Resident added.");

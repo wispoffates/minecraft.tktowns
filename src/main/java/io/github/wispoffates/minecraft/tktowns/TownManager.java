@@ -1,5 +1,7 @@
 package io.github.wispoffates.minecraft.tktowns;
 
+import io.github.wispoffates.minecraft.tktowns.datastore.DataStore;
+import io.github.wispoffates.minecraft.tktowns.datastore.YamlStore;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TownNotFoundException;
 
@@ -12,12 +14,12 @@ import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 public class TownManager {
 	
 	protected final static String TKTOWNS_HEADER = "--- TKTowns ---";
-	
 	
 	//singleton instance
 	protected static TownManager instance;
@@ -25,20 +27,14 @@ public class TownManager {
 	
 	//variables and stuff
 	protected Map<String,Town> towns;
+	protected DataStore config;
 	
-	protected TownManager() {
+	protected TownManager(FileConfiguration fileConfiguration) {
 		towns = new HashMap<String,Town>();
-	}
-	
-	public static TownManager getInstance() {
-		if(instance == null) {
-			synchronized(lock) {
-				if(instance == null) {
-					instance = new TownManager();
-				}
-			}
-		}
-		return instance;
+		instance = this;
+		//load general configuration
+		this.config = new YamlStore(fileConfiguration);
+		//load towns
 	}
 	
 	/**

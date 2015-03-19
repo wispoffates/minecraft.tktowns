@@ -14,9 +14,9 @@ import me.ryanhamshire.GriefPrevention.Claim;
 
 //TODO Wrap Vault economy so we can throw exceptions here and keep log message and stuff in the Manager
 public class Town  extends RealEstate {
-	private static final Logger log = Logger.getLogger("Minecraft");
+	transient private static final Logger log = Logger.getLogger("Minecraft");
 	
-	protected static final String BANK_PREFIX="tktown_5482154"; //extra digits to make the chance of collision with a player name very small
+	transient protected static final String BANK_PREFIX="tktown_5482154"; //extra digits to make the chance of collision with a player name very small
 
 	protected Map<String, RealEstate> children;
 	protected Map<String, Outpost> outposts;

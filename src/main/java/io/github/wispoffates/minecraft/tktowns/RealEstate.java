@@ -19,9 +19,21 @@ public class RealEstate {
 	/**
 	 * Town this piece of real estate belongs too.
 	 */
-	protected Town parent;
+	transient protected Town parent;
+	protected UUID parentId;
+	
+	/**
+	 * Owner of the plot. Null if the plot is server owned.
+	 */
+	transient protected Player owner = null; 
+	protected UUID ownerId = null;
+	
+	transient protected Claim claim = null;
+	protected Long gpClaimId = -1L;
+	
 
 	protected String name;
+	protected UUID id;
 	/**
 	 * Lease time is specified in number of days
 	 */
@@ -30,22 +42,21 @@ public class RealEstate {
 	protected double recurringCost;			//Recurring cost 
 	protected double downPayment;			//initial cost of the transaction
 	protected Status status = Status.OWNED;
-	/**
-	 * Owner of the plot. Null if the plot is server owned.
-	 */
-	protected UUID owner = null;
 	
-	protected Claim claim = null;
-	protected Long gpClaimId = -1L;
 	
+	/** Empty constructor for GSON*/
+	RealEstate() {
+		
+	}
+
 	/**
 	 *  Owned Constructor
 	 */
 	RealEstate(Claim claim, Town parent, String name) {
-		this.claim = claim;
 		this.parent = parent;
+		this.parentId = parent.getId();
 		this.name = name;
-		this.owner = claim.ownerID;
+		this.ownerId = claim.ownerID;
 		this.gpClaimId = claim.getID();
 	}
 	
@@ -124,7 +135,7 @@ public class RealEstate {
 		if(!er.transactionSuccess()) {
 			throw new TKTownsException(er.errorMessage);
 		}
-		this.setOwner(newOwner.getUniqueId());
+		this.setOwner(newOwner);
 		this.remainingDays = this.leaseTime;
 		switch(this.status) {
 			case FORRENT: {
@@ -148,8 +159,7 @@ public class RealEstate {
 	public void collect() {
 		switch(this.status) {
 			case RENTED: {
-				Player player  = Bukkit.getPlayer(this.owner);
-				EconomyResponse er = TKTowns.econ.withdrawPlayer(player, this.downPayment);
+				EconomyResponse er = TKTowns.econ.withdrawPlayer(this.getOwner(), this.downPayment);
 				if(!er.transactionSuccess()) {
 					this.forclose();
 				}
@@ -209,13 +219,18 @@ public class RealEstate {
 		this.downPayment = downpayment;
 	}
 	
-	public UUID getOwner() {
+	public Player getOwner() {
+		//Check that we actually have it might be null!
+		if(owner == null) {
+			this.owner = Bukkit.getPlayer(ownerId);
+		}
 		return owner;
 	}
 
-	public void setOwner(UUID owner) {
+	public void setOwner(Player owner) {
 		this.owner = owner;
-		this.claim.ownerID = owner; //change gp claim owner;
+		this.ownerId = owner.getUniqueId();
+		this.claim.ownerID = owner.getUniqueId(); //change gp claim owner;
 	}
 	
 	public void setStatus(Status nStatus) {
@@ -226,9 +241,61 @@ public class RealEstate {
 		return this.status;
 	}
 
+	public UUID getParentId() {
+		return parentId;
+	}
+
+	public void setParentnId(UUID parentId) {
+		this.parentId = parentId;
+	}
+
+	public UUID getId() {
+		return id;
+	}
+
+	public void setId(UUID id) {
+		this.id = id;
+	}
+
+	public int getRemainingDays() {
+		return remainingDays;
+	}
+
+	public void setRemainingDays(int remainingDays) {
+		this.remainingDays = remainingDays;
+	}
+
+	public UUID getOwnerId() {
+		return ownerId;
+	}
+
+	public void setOwnerId(UUID ownerId) {
+		this.ownerId = ownerId;
+	}
+
+	public Long getGpClaimId() {
+		return gpClaimId;
+	}
+
+	public void setGpClaimId(Long gpClaimId) {
+		this.gpClaimId = gpClaimId;
+	}
+
+	public Claim getClaim() {
+		return claim;
+	}
+
+	public void setClaim(Claim claim) {
+		this.claim = claim;
+	}
+
+	public void setParentId(UUID parentId) {
+		this.parentId = parentId;
+	}
+
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		if(this.parent != null) {
+		if(this.getParent() != null) {
 			sb.append("Real Estate: " + this.name + " in " + parent.getName() + " ");
 		} else {
 			sb.append("Town:" + this.name + " ");
@@ -247,15 +314,15 @@ public class RealEstate {
 				break;
 			}
 			case OWNED: {
-				sb.append("owned by " + Bukkit.getPlayer(this.owner).getName());
+				sb.append("owned by " + this.getOwner().getName());
 				break;
 			}
 			case RENTED: { 
-				sb.append("rented by " + Bukkit.getPlayer(this.owner).getName());
+				sb.append("rented by " + this.getOwner().getName());
 				break;			
 			}
 			case LEASED: {
-				sb.append("leased by " + Bukkit.getPlayer(this.owner).getName());
+				sb.append("leased by " + this.getOwner().getName());
 				break;
 			}
 			case INDEFAULT: {
