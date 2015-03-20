@@ -9,8 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 
@@ -147,15 +147,15 @@ public class YamlStore implements DataStore {
 	}
 
 	@Override
-	public void saveTowns(Map<String, Town> towns) {
-		for(Entry<String,Town> te : towns.entrySet()) {
-			saveTown(te.getKey(),te.getValue());
+	public void saveTowns(List<Town> towns) {
+		for(Town t : towns) {
+			saveTown(t);
 		}
 		
 	}
 
 	@Override
-	public void saveTown(String name, Town town) {
+	public void saveTown(Town town) {
 		File townsDir = new File(this.configDir,"towns");
 		if(!townsDir.exists()) {
 			//create the directory
@@ -163,6 +163,19 @@ public class YamlStore implements DataStore {
 		}
 		
 		this.jsonToFile(town, "towns" + File.pathSeparator + town.getId() + ".json");
+	}
+
+	@Override
+	public void deleteTown(Town town) {
+		File deletedDir = new File(this.configDir,"deleted_towns");
+		if(!deletedDir.exists()) {
+			//create the directory
+			deletedDir.mkdirs();
+		}
+		
+		File townsDir = new File(this.configDir,"towns");
+		File townFile = new File(townsDir,town.getId()+".json");
+		townFile.renameTo(new File(deletedDir,town.getId()+".json"));
 	}
 
 }

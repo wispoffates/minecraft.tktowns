@@ -71,6 +71,8 @@ public class TownManager {
 		town.addResident(player);
 		towns.put(name, town);
 		townsById.put(town.getId(), town);
+		//save the town
+		this.config.saveTown(town);
 	}
 
 	public void deleteTown(Player player, String name) throws TKTownsException {
@@ -86,6 +88,10 @@ public class TownManager {
 		if(!town.isMayor(player)) {
 			throw new TKTownsException("Only the mayor of a town can delete it.");
 		}
+		//delete town
+		this.towns.remove(name);
+		this.townsById.remove(town.getId());
+		this.config.deleteTown(town);
 	}
 
 	public void depositTown(Player player, String name, String amount) throws TownNotFoundException, IllegalArgumentException {
@@ -184,6 +190,7 @@ public class TownManager {
 		
 		RealEstate re = new RealEstate(claim, town, name);
 		town.addChild(re);
+		this.config.saveTown(town); //save the town now that the realestate is created.
 	}
 
 	public void sellRealestate(Player player, String amount) throws TKTownsException, IllegalArgumentException {
@@ -199,6 +206,7 @@ public class TownManager {
 		}
 		try {
 			re.sell(Double.parseDouble(amount));
+			this.config.saveTown(re.getParent()); //save town so we keep the realestate saved.
 		} catch(NumberFormatException e) {
 			throw new IllegalArgumentException("The amount must be a double ex: 20.5");
 		}
@@ -217,6 +225,7 @@ public class TownManager {
 		}
 		try {
 			re.lease(Integer.parseInt(period), Double.parseDouble(downpayment), Double.parseDouble(amount));
+			this.config.saveTown(re.getParent()); //save town so we keep the realestate saved.
 		} catch(NumberFormatException e) {
 			throw new IllegalArgumentException("The amount must be a double ex: 20.5");
 		}
@@ -236,6 +245,7 @@ public class TownManager {
 		}
 		try {
 			re.rent(Double.parseDouble(downpayment), Double.parseDouble(reaccuring));
+			this.config.saveTown(re.getParent()); //save town so we keep the realestate saved.
 		} catch(NumberFormatException e) {
 			throw new IllegalArgumentException("The amount must be a double ex: 20.5");
 		}
@@ -273,6 +283,7 @@ public class TownManager {
 		}
 		Outpost out = new Outpost(claim, town, name);
 		town.addOutpost(out);
+		this.config.saveTown(town); //save town so we keep the outpost saved.
 	}
 
 	public void deleteOutpost(Player player, String name) throws TKTownsException {
@@ -283,6 +294,7 @@ public class TownManager {
 				throw new TKTownsException("Only the mayor can delete an outpost.");
 			}
 			out.getParent().removeOutpost(out.getName());
+			this.config.saveTown(re.getParent()); //save town so we keep the realestate saved.
 		} else {
 			throw new TKTownsException("You are not standing in an outpost.");
 		}
@@ -313,6 +325,7 @@ public class TownManager {
 			throw new TKTownsException("Player by that name does not exist.");
 		}
 		town.addResident(resident);
+		this.config.saveTown(town); //save town with the new residents.
 	}
 
 	public void deleteResident(Player player, String name) throws TKTownsException {
@@ -324,7 +337,8 @@ public class TownManager {
 		if(resident == null) {
 			throw new TKTownsException("Player by that name does not exist.");
 		}
-		town.removeResident(resident);	
+		town.removeResident(resident);
+		this.config.saveTown(town); //save town with the new residents.
 	}
 	
 	protected Town getTownMayorOf(Player player) {
