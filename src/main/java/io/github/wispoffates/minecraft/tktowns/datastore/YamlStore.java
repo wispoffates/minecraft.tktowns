@@ -3,20 +3,20 @@ package io.github.wispoffates.minecraft.tktowns.datastore;
 import io.github.wispoffates.minecraft.tktowns.Town;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import de.schlichtherle.io.File;
-import de.schlichtherle.io.FileOutputStream;
 
 public class YamlStore implements DataStore {
 	
@@ -140,23 +140,30 @@ public class YamlStore implements DataStore {
 		if(townsDir.exists() && townsDir.isDirectory()) {  //Only need to load anything if the directory is there
 			String[] files = townsDir.list();
 			for(String file : files) {
-				towns.put(key, jsonFromFile(file,Town.class));
+				Town t = jsonFromFile(file,Town.class);
+				towns.put(t.getName(), t);
 			}
-			// TODO Auto-generated method stub
 		}
 		return towns;
 	}
 
 	@Override
 	public void saveTowns(Map<String, Town> towns) {
-		// TODO Auto-generated method stub
+		for(Entry<String,Town> te : towns.entrySet()) {
+			saveTown(te.getKey(),te.getValue());
+		}
 		
 	}
 
 	@Override
 	public void saveTown(String name, Town town) {
-		// TODO Auto-generated method stub
+		File townsDir = new File(this.configDir,"towns");
+		if(!townsDir.exists()) {
+			//create the directory
+			townsDir.mkdirs();
+		}
 		
+		this.jsonToFile(town, "towns" + File.pathSeparator + town.getId() + ".json");
 	}
 
 }

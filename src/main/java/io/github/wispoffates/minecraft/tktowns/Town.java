@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -135,16 +136,28 @@ public class Town  extends RealEstate {
 		return this.residents.size();
 	}
 	
-	public void setMayor(UUID player) {
-		this.setOwner(player);
+	
+	//Handle mayor bit (really just owner conviently renamed)
+	public void setMayorId(UUID player) {
+		this.setOwnerId(player);
+		this.setOwner(Bukkit.getPlayer(player));
 	}
 	
 	public boolean isMayor(Player player) {
-		return this.owner.equals(player.getUniqueId());
+		return this.owner.equals(player);
 	}
 	
-	public UUID getMayor() {
-		return this.owner;
+	public UUID getMayorId() {
+		return this.ownerId;
+	}
+	
+	public void setMayor(Player player) {
+		this.setOwnerId(player.getUniqueId());
+		this.setOwner(player);
+	}
+	
+	public Player getMayor() {
+		return this.getOwner();
 	}
 	
 	public void addOutpost(Outpost out) {

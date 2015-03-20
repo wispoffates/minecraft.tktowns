@@ -9,7 +9,10 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import com.google.common.base.Optional;
+
 import me.ryanhamshire.GriefPrevention.Claim;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
 
 public class RealEstate {
 	
@@ -19,16 +22,16 @@ public class RealEstate {
 	/**
 	 * Town this piece of real estate belongs too.
 	 */
-	transient protected Town parent;
+	transient protected Optional<Town> parent = Optional.absent();
 	protected UUID parentId;
 	
 	/**
 	 * Owner of the plot. Null if the plot is server owned.
 	 */
-	transient protected Player owner = null; 
+	transient protected Optional<Player> owner = Optional.absent();
 	protected UUID ownerId = null;
 	
-	transient protected Claim claim = null;
+	transient protected Optional<Claim> claim = Optional.absent();
 	protected Long gpClaimId = -1L;
 	
 
@@ -53,11 +56,13 @@ public class RealEstate {
 	 *  Owned Constructor
 	 */
 	RealEstate(Claim claim, Town parent, String name) {
-		this.parent = parent;
+		this.parent = Optional.of(parent);
 		this.parentId = parent.getId();
 		this.name = name;
+		this.owner = Optional.of(Bukkit.getPlayer(parentId));
 		this.ownerId = claim.ownerID;
 		this.gpClaimId = claim.getID();
+		this.id = UUID.randomUUID();
 	}
 	
 	/**
@@ -123,7 +128,7 @@ public class RealEstate {
 	public void forclose() {
 		this.status = Status.INDEFAULT;
 		if(this.parent != null) {
-			this.setOwner(this.parent.getOwner());
+			this.setOwner(this.getParent().getOwner());
 		} else {
 			this.owner = null;
 			//TODO: set as admin claim or is owner null enough?
@@ -180,11 +185,15 @@ public class RealEstate {
 	//Getters and setters ---------------------------------------------------------------------------
 	
 	public Town getParent() {
-		return parent;
+		if(!parent.isPresent())
+			parent = Optional.of(TownManager.instance.getTownById(parentId));
+		
+		return parent.get();
 	}
 
 	public void setParent(Town parent) {
-		this.parent = parent;
+		this.parent = Optional.of(parent);
+		this.parentId = parent.getId();
 	}
 
 	public String getName() {
@@ -220,17 +229,16 @@ public class RealEstate {
 	}
 	
 	public Player getOwner() {
-		//Check that we actually have it might be null!
-		if(owner == null) {
-			this.owner = Bukkit.getPlayer(ownerId);
-		}
-		return owner;
+		if(!owner.isPresent())
+			owner = Optional.of(Bukkit.getPlayer(ownerId));
+			
+		return owner.get();
 	}
 
 	public void setOwner(Player owner) {
-		this.owner = owner;
+		this.owner = Optional.of(owner);
 		this.ownerId = owner.getUniqueId();
-		this.claim.ownerID = owner.getUniqueId(); //change gp claim owner;
+		this.getClaim().ownerID = owner.getUniqueId(); //change gp claim owner;
 	}
 	
 	public void setStatus(Status nStatus) {
@@ -282,11 +290,15 @@ public class RealEstate {
 	}
 
 	public Claim getClaim() {
-		return claim;
+		if(!claim.isPresent())
+			claim = Optional.of(GriefPrevention.instance.dataStore.getClaim(gpClaimId));
+		
+		return claim.get();
 	}
 
 	public void setClaim(Claim claim) {
-		this.claim = claim;
+		this.claim = Optional.of(claim);
+		this.gpClaimId = claim.getID();
 	}
 
 	public void setParentId(UUID parentId) {
@@ -296,7 +308,7 @@ public class RealEstate {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		if(this.getParent() != null) {
-			sb.append("Real Estate: " + this.name + " in " + parent.getName() + " ");
+			sb.append("Real Estate: " + this.name + " in " + getParent().getName() + " ");
 		} else {
 			sb.append("Town:" + this.name + " ");
 		}

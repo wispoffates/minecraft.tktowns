@@ -13,7 +13,6 @@ import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -234,7 +233,7 @@ public class TKTowns extends JavaPlugin {
     protected static String formatTown(Town town) {
     	StringBuilder sb = new StringBuilder();
     	sb.append("------------" + town.getName() + "--------------").append("\n");
-    	sb.append("Mayor: " + Bukkit.getPlayer(town.getOwner())).append("\n");
+    	sb.append("Mayor: " + town.getOwner()).append("\n");
     	sb.append("Residents: " + town.countResidents()).append("\n");
     	
     	return sb.toString();

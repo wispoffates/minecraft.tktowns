@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -27,14 +28,21 @@ public class TownManager {
 	
 	//variables and stuff
 	protected Map<String,Town> towns;
+	protected Map<UUID,Town> townsById; //secondary index to get towns by id
 	protected DataStore config;
 	
 	protected TownManager(FileConfiguration fileConfiguration) {
 		towns = new HashMap<String,Town>();
+		townsById = new HashMap<UUID, Town>();
 		instance = this;
 		//load general configuration
 		this.config = new YamlStore(fileConfiguration);
 		//load towns
+		this.towns = this.config.loadTowns();
+		//populate ID index
+		for(Town t : this.towns.values()) {
+			this.townsById.put(t.getId(), t);
+		}
 	}
 	
 	/**
@@ -58,9 +66,10 @@ public class TownManager {
 		}
 		
 		Town town = new Town(claim,name);
-		town.setMayor(player.getUniqueId());
+		town.setMayor(player);
 		town.addResident(player);
 		towns.put(name, town);
+		townsById.put(town.getId(), town);
 	}
 
 	public void deleteTown(Player player, String name) throws TKTownsException {
@@ -269,10 +278,10 @@ public class TownManager {
 		RealEstate re = this.getRealEstateAtPlayerLocation(player);
 		if(re instanceof Outpost) {
 			Outpost out = (Outpost) re;
-			if(!out.parent.isMayor(player)) {
+			if(!out.getParent().isMayor(player)) {
 				throw new TKTownsException("Only the mayor can delete an outpost.");
 			}
-			out.parent.removeOutpost(out.getName());
+			out.getParent().removeOutpost(out.getName());
 		} else {
 			throw new TKTownsException("You are not standing in an outpost.");
 		}
@@ -331,7 +340,7 @@ public class TownManager {
 		Town ret = null;
 		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), true, null);
 		for(Town town : this.towns.values()) {
-			if(town.claim.getID() == claim.getID() || town.claim.getID() == claim.parent.getID()) {
+			if(town.getClaim().getID() == claim.getID() || town.getClaim().getID() == claim.parent.getID()) {
 				ret = town;
 			}
 		}
@@ -344,7 +353,7 @@ public class TownManager {
 		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), true, null);
 		for(Town town : this.towns.values()) {
 			for(RealEstate re : town.getChildren().values()) {
-				if(re.claim.getID() == claim.getID() || re.claim.getID() == claim.parent.getID()) {
+				if(re.getClaim().getID() == claim.getID() || re.getClaim().getID() == claim.getID()) {
 					ret = re;
 				}
 			}
@@ -377,6 +386,10 @@ public class TownManager {
 			throw new TKTownsException("Only the mayor of a town can check the bank balance.");
 		}
 		return town.getBankBalance(player);
+	}
+	
+	public Town getTownById(UUID id) {
+		return townsById.get(id);
 	}
 
 	
