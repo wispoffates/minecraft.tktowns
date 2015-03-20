@@ -2,6 +2,7 @@ package io.github.wispoffates.minecraft.tktowns.datastore;
 
 import io.github.wispoffates.minecraft.tktowns.Town;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -20,6 +21,7 @@ public interface DataStore {
 	
 	//town loading and saving
 	public Map<String,Town> loadTowns();
-	public void saveTowns(Map<String,Town> towns);
-	public void saveTown(String name, Town town);
+	public void saveTowns(List<Town> towns);
+	public void saveTown(Town town);
+	public void deleteTown(Town town);
 }
