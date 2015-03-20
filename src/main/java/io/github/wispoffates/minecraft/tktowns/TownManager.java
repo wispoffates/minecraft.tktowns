@@ -5,6 +5,7 @@ import io.github.wispoffates.minecraft.tktowns.datastore.YamlStore;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TownNotFoundException;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class TownManager {
 	protected Map<UUID,Town> townsById; //secondary index to get towns by id
 	protected DataStore config;
 	
-	protected TownManager(FileConfiguration fileConfiguration) {
+	protected TownManager(File fileConfiguration) {
 		towns = new HashMap<String,Town>();
 		townsById = new HashMap<UUID, Town>();
 		instance = this;

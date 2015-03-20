@@ -40,7 +40,7 @@ public class TKTowns extends JavaPlugin {
         setupPermissions();
         setupChat();
         
-        TKTowns.townManager = new TownManager(this.getConfig());
+        TKTowns.townManager = new TownManager(this.getDataFolder());
         
         log.info(String.format("[%s] Eanbled Version %s", getDescription().getName(), getDescription().getVersion()));
 	}

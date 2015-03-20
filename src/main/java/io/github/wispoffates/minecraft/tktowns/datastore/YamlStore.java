@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import org.bukkit.configuration.file.FileConfiguration;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -27,8 +26,8 @@ public class YamlStore implements DataStore {
 	protected transient GeneralConfig gconf;
 	
 	
-	public YamlStore(FileConfiguration config) {
-		this.configDir = config.getCurrentPath();
+	public YamlStore(File configDir) {
+		this.configDir = configDir.toString();
 		gson = new GsonBuilder().setPrettyPrinting().create();
 		File generalConfigFile = new File(this.configDir,CONFIG_FILE);
 		if(!generalConfigFile.exists()) {
