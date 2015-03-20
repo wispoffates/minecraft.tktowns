@@ -216,8 +216,11 @@ public class TKTowns extends JavaPlugin {
 		for(String str : collect) {
 			sb.append(str + ", ");
 		}
-		
-		return sb.toString().substring(0, sb.length()-2);
+		if(sb.toString().contains(",")) {
+			return sb.toString().substring(0, sb.length()-2);
+		} else {
+			return sb.toString();
+		}
 	}
     
     protected static String formatRealestate(Set<RealEstate> realestate, boolean onlyAvailable) {

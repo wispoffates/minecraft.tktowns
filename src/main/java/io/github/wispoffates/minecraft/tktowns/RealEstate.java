@@ -56,10 +56,14 @@ public class RealEstate {
 	 *  Owned Constructor
 	 */
 	RealEstate(Claim claim, Town parent, String name) {
-		this.parent = Optional.of(parent);
-		this.parentId = parent.getId();
+		if(parent != null) {
+			this.parent = Optional.of(parent);
+			this.parentId = parent.getId();
+			this.owner = Optional.of(Bukkit.getPlayer(parentId));
+		} else {
+			this.owner = Optional.of(Bukkit.getPlayer(claim.ownerID));
+		}
 		this.name = name;
-		this.owner = Optional.of(Bukkit.getPlayer(parentId));
 		this.ownerId = claim.ownerID;
 		this.gpClaimId = claim.getID();
 		this.id = UUID.randomUUID();
