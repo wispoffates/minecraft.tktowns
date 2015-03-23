@@ -253,14 +253,6 @@ public class RealEstate {
 		return this.status;
 	}
 
-	public UUID getParentId() {
-		return parentId;
-	}
-
-	public void setParentnId(UUID parentId) {
-		this.parentId = parentId;
-	}
-
 	public UUID getId() {
 		return id;
 	}
@@ -275,22 +267,6 @@ public class RealEstate {
 
 	public void setRemainingDays(int remainingDays) {
 		this.remainingDays = remainingDays;
-	}
-
-	public UUID getOwnerId() {
-		return ownerId;
-	}
-
-	public void setOwnerId(UUID ownerId) {
-		this.ownerId = ownerId;
-	}
-
-	public Long getGpClaimId() {
-		return gpClaimId;
-	}
-
-	public void setGpClaimId(Long gpClaimId) {
-		this.gpClaimId = gpClaimId;
 	}
 
 	public Claim getClaim() {

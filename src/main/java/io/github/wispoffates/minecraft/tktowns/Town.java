@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import com.google.common.base.Optional;
+
 import net.milkbowl.vault.economy.EconomyResponse;
 import me.ryanhamshire.GriefPrevention.Claim;
 
@@ -21,8 +23,21 @@ public class Town  extends RealEstate {
 
 	protected Map<String, RealEstate> children;
 	protected Map<String, Outpost> outposts;
-	protected Set<Player> residents;
+	
+	transient protected Optional<Set<Player>> residents = Optional.absent();
+	protected Set<UUID> residentsIds; //no accessors on purpose we want one coherent API this exists just for gson
 
+	/**
+	 * Empty constructor for gson
+	 */
+	public Town() {
+		super();
+		this.children = new HashMap<String,RealEstate>();
+		this.outposts = new HashMap<String,Outpost>();
+		this.residentsIds = new HashSet<UUID>();
+		//leave residents empty on purpose... we will initiate in when it is pulled
+	}
+	
 	/**
 	 * New Town constructor
 	 * @param claim GPClaim that this town.
@@ -32,7 +47,7 @@ public class Town  extends RealEstate {
 		super(claim,null,name);
 		this.children = new HashMap<String,RealEstate>();
 		this.outposts = new HashMap<String,Outpost>();
-		this.residents = new HashSet<Player>();
+		this.residentsIds = new HashSet<UUID>();
 	}
 	
 	/**
@@ -121,38 +136,44 @@ public class Town  extends RealEstate {
 	}
 	
 	public void addResident(Player player) {
-		this.residents.add(player);	
+		if(this.residents.isPresent()) {
+			this.residents.get().add(player);
+		}
+		this.residentsIds.add(player.getUniqueId());	
 	}
 	
 	public boolean isResident(Player player) {
-		return this.residents.contains(player.getUniqueId());
+		return this.residentsIds.contains(player.getUniqueId());
 	}
 
 	public void removeResident(Player player) {
-		this.residents.remove(player.getUniqueId());
+		if(this.residents.isPresent()) {
+			this.residents.get().remove(player);
+		}
+		this.residentsIds.remove(player.getUniqueId());
 	}
 	
 	public int countResidents() {
-		return this.residents.size();
+		return this.residentsIds.size();
 	}
 	
-	
-	//Handle mayor bit (really just owner conviently renamed)
-	public void setMayorId(UUID player) {
-		this.setOwnerId(player);
-		this.setOwner(Bukkit.getPlayer(player));
+	public Set<Player> getResidents() {
+		if(!this.residents.isPresent()) { //residents haven't  been initialized lets do that
+			Set<Player> resList = new HashSet<Player>();
+			for(UUID id : this.residentsIds) {
+				resList.add(Bukkit.getPlayer(id));
+			}
+			this.residents = Optional.of(resList);
+		}
+		return this.residents.get();
 	}
 	
 	public boolean isMayor(Player player) {
 		return this.owner.equals(player);
 	}
 	
-	public UUID getMayorId() {
-		return this.ownerId;
-	}
-	
+	//Handle mayor bit (really just owner conviently renamed)
 	public void setMayor(Player player) {
-		this.setOwnerId(player.getUniqueId());
 		this.setOwner(player);
 	}
 	

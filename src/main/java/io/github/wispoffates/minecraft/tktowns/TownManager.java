@@ -311,7 +311,7 @@ public class TownManager {
 			throw new TownNotFoundException("No town with that name exists.");
 		}
 		
-		return town.residents;
+		return town.getResidents();
 	}
 
 	public void addResident(Player player, String name) throws TKTownsException {
