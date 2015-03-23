@@ -1,8 +1,5 @@
 package io.github.wispoffates.minecraft.tktowns.datastore;
 
-import io.github.wispoffates.minecraft.tktowns.Town;
-
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class GeneralConfig {
