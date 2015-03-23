@@ -139,7 +139,7 @@ public class YamlStore implements DataStore {
 		if(townsDir.exists() && townsDir.isDirectory()) {  //Only need to load anything if the directory is there
 			String[] files = townsDir.list();
 			for(String file : files) {
-				Town t = jsonFromFile(file,Town.class);
+				Town t = jsonFromFile("towns"+File.separator+file,Town.class);
 				towns.put(t.getName(), t);
 			}
 		}
@@ -162,7 +162,7 @@ public class YamlStore implements DataStore {
 			townsDir.mkdirs();
 		}
 		
-		this.jsonToFile(town, "towns" + File.pathSeparator + town.getId() + ".json");
+		this.jsonToFile(town, "towns" + File.separator + town.getId() + ".json");
 	}
 
 	@Override

@@ -169,7 +169,7 @@ public class Town  extends RealEstate {
 	}
 	
 	public boolean isMayor(Player player) {
-		return this.owner.equals(player);
+		return this.getOwner().equals(player);
 	}
 	
 	//Handle mayor bit (really just owner conviently renamed)

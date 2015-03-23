@@ -178,7 +178,13 @@ public class TownManager {
 			throw new TKTownsException("You are not standing in a GriefPrevention claim.");
 		}
 		if(town == null) {
+			throw new TKTownsException("You are not the mayor of a town.");
+		}
+		if(claim.parent == null) {
 			throw new TKTownsException("This claim is not part of a town.");
+		}
+		if(claim.parent.getID().equals(town.id)) {
+			throw new TKTownsException("You are not the mayor of this claim's town.");
 		}
 		if(town.getChildren().containsKey(name)) {
 			throw new TKTownsException("A claim with that name all ready exists.");
