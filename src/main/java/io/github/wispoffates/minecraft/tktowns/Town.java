@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import com.google.common.base.Optional;
@@ -24,7 +25,7 @@ public class Town  extends RealEstate {
 	protected Map<String, RealEstate> children;
 	protected Map<String, Outpost> outposts;
 	
-	transient protected Optional<Set<Player>> residents = Optional.absent();
+	transient protected Optional<Set<OfflinePlayer>> residents = Optional.absent();
 	protected Set<UUID> residentsIds; //no accessors on purpose we want one coherent API this exists just for gson
 
 	/**
@@ -157,27 +158,26 @@ public class Town  extends RealEstate {
 		return this.residentsIds.size();
 	}
 	
-	public Set<Player> getResidents() {
+	public Set<OfflinePlayer> getResidents() {
 		if(!this.residents.isPresent()) { //residents haven't  been initialized lets do that
-			Set<Player> resList = new HashSet<Player>();
+			Set<OfflinePlayer> resList = new HashSet<OfflinePlayer>();
 			for(UUID id : this.residentsIds) {
-				resList.add(Bukkit.getPlayer(id));
+				resList.add(Bukkit.getOfflinePlayer(id));
 			}
 			this.residents = Optional.of(resList);
 		}
 		return this.residents.get();
 	}
 	
-	public boolean isMayor(Player player) {
-		return this.getOwner().equals(player);
+	public boolean isMayor(OfflinePlayer player) {
+		return this.ownerId.equals(player.getUniqueId());
 	}
-	
 	//Handle mayor bit (really just owner conviently renamed)
 	public void setMayor(Player player) {
 		this.setOwner(player);
 	}
 	
-	public Player getMayor() {
+	public OfflinePlayer getMayor() {
 		return this.getOwner();
 	}
 	

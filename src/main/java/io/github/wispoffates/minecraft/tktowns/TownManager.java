@@ -16,11 +16,13 @@ import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 public class TownManager {
 	
 	protected final static String TKTOWNS_HEADER = "--- TKTowns ---";
+	protected final static String TKTOWNS_ERROR_HEADER = "--- TKTowns Error! ---";
 	
 	//singleton instance
 	protected static TownManager instance;
@@ -306,7 +308,7 @@ public class TownManager {
 		
 	}
 
-	public Set<Player> listResidents(Player player, String name) throws TownNotFoundException {
+	public Set<OfflinePlayer> listResidents(Player player, String name) throws TownNotFoundException {
 		Town town = null;
 		if(name == null) {
 			town = this.getTownMayorOf(player);
@@ -327,7 +329,7 @@ public class TownManager {
 			throw new TKTownsException("Only the mayor of a town can add residents.");
 		}
 		if(resident == null) {
-			throw new TKTownsException("Player by that name does not exist.");
+			throw new TKTownsException("Player by that name is not online or does not exist.");
 		}
 		town.addResident(resident);
 		this.config.saveTown(town); //save town with the new residents.

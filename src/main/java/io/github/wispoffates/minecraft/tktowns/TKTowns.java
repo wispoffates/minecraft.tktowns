@@ -13,6 +13,7 @@ import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -178,18 +179,23 @@ public class TKTowns extends JavaPlugin {
 			} else if(cmdStr.equalsIgnoreCase("tkt_resident") || cmdStr.equalsIgnoreCase("tkres")) {
 				//[List/add/delete]
 				if(args.length == 0) {
-					Set<Player> residents = TKTowns.townManager.listResidents(player, null);
+					Set<OfflinePlayer> residents = TKTowns.townManager.listResidents(player, null);
 					StringBuilder sb = new StringBuilder();
 					sb.append("Residents: ");
-					for(Player res : residents) {
+					for(OfflinePlayer res : residents) {
 						sb.append(res.getName() + " ");
 					}
 					player.sendMessage(sb.toString());
 				} else if(args[0].equalsIgnoreCase("list")) {
-					Set<Player> residents = TKTowns.townManager.listResidents(player,argsList.get(1));
+					Set<OfflinePlayer> residents = null;
+					if(argsList.size() > 1) {
+						residents = TKTowns.townManager.listResidents(player,argsList.get(1));
+					} else {
+						residents = TKTowns.townManager.listResidents(player, null);
+					}
 					StringBuilder sb = new StringBuilder();
 					sb.append("Residents: ");
-					for(Player res : residents) {
+					for(OfflinePlayer res : residents) {
 						sb.append(res.getName() + " ");
 					}
 					player.sendMessage(sb.toString());
@@ -204,8 +210,9 @@ public class TKTowns extends JavaPlugin {
 			}
 		} catch (Exception e) {
 			Player player = (Player) sender;
-			player.sendMessage(TownManager.TKTOWNS_HEADER);
-			player.sendMessage(e.getMessage());
+			player.sendMessage(TownManager.TKTOWNS_ERROR_HEADER);
+			player.sendMessage(e.getClass().getName() + " :: " + e.getMessage());
+			e.printStackTrace();
 			return true;
 		}
 		return false;
@@ -236,7 +243,7 @@ public class TKTowns extends JavaPlugin {
     protected static String formatTown(Town town) {
     	StringBuilder sb = new StringBuilder();
     	sb.append("------------" + town.getName() + "--------------").append("\n");
-    	sb.append("Mayor: " + town.getOwner()).append("\n");
+    	sb.append("Mayor: " + town.getOwner().getName()).append("\n");
     	sb.append("Residents: " + town.countResidents()).append("\n");
     	
     	return sb.toString();

@@ -7,6 +7,7 @@ import java.util.UUID;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import com.google.common.base.Optional;
@@ -28,7 +29,7 @@ public class RealEstate {
 	/**
 	 * Owner of the plot. Null if the plot is server owned.
 	 */
-	transient protected Optional<Player> owner = Optional.absent();
+	transient protected Optional<OfflinePlayer> owner = Optional.absent();
 	protected UUID ownerId = null;
 	
 	transient protected Optional<Claim> claim = Optional.absent();
@@ -59,9 +60,9 @@ public class RealEstate {
 		if(parent != null) {
 			this.parent = Optional.of(parent);
 			this.parentId = parent.getId();
-			this.owner = Optional.of(Bukkit.getPlayer(parentId));
+			this.owner = Optional.of(Bukkit.getOfflinePlayer(parentId));
 		} else {
-			this.owner = Optional.of(Bukkit.getPlayer(claim.ownerID));
+			this.owner = Optional.of(Bukkit.getOfflinePlayer(claim.ownerID));
 		}
 		this.name = name;
 		this.ownerId = claim.ownerID;
@@ -232,14 +233,14 @@ public class RealEstate {
 		this.downPayment = downpayment;
 	}
 	
-	public Player getOwner() {
+	public OfflinePlayer getOwner() {
 		if(!owner.isPresent())
-			owner = Optional.of(Bukkit.getPlayer(ownerId));
+			owner = Optional.of(Bukkit.getOfflinePlayer(ownerId));
 			
 		return owner.get();
 	}
 
-	public void setOwner(Player owner) {
+	public void setOwner(OfflinePlayer owner) {
 		this.owner = Optional.of(owner);
 		this.ownerId = owner.getUniqueId();
 		this.getClaim().ownerID = owner.getUniqueId(); //change gp claim owner;
