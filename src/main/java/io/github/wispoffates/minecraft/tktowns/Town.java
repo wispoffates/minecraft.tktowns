@@ -57,7 +57,9 @@ public class Town  extends RealEstate {
 	 * @param recipent The person to receive the money or null if it is the server.
 	 * @return Boolean - whether the transaction was successful.
 	 */
-	public boolean withdraw(double amount, Player recipent) {
+	public boolean withdraw(double amount, Player recipent) { 
+		//TODO: Player withdraw or only from banks?
+		//TODO: Need to create town banks somewhere
 		EconomyResponse resp = TKTowns.econ.bankWithdraw(BANK_PREFIX+this.name, amount);
 		if(resp.transactionSuccess()) {
 			if(recipent == null) {

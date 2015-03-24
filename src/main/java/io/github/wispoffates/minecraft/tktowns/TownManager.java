@@ -191,9 +191,10 @@ public class TownManager {
 		if(town.getChildren().containsKey(name)) {
 			throw new TKTownsException("A claim with that name all ready exists.");
 		}
-		if(!claim.ownerID.equals(player.getUniqueId())) {
+		/*
+		if(!claim.ownerID.equals(player.getUniqueId())) {  //TODO: Do we care we have all ready checked that they are town mayor...
 			throw new TKTownsException("You do not own this claim.");
-		}
+		}*/
 		
 		RealEstate re = new RealEstate(claim, town, name);
 		town.addChild(re);
