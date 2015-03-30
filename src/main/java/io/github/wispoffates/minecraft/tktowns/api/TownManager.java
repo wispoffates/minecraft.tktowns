@@ -9,6 +9,9 @@ import io.github.wispoffates.minecraft.tktowns.datastore.DataStore;
 import io.github.wispoffates.minecraft.tktowns.datastore.YamlStore;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TownNotFoundException;
+import io.github.wispoffates.minecraft.tktowns.responses.OutpostModificationResponse;
+import io.github.wispoffates.minecraft.tktowns.responses.RealestateModificationResponse;
+import io.github.wispoffates.minecraft.tktowns.responses.TownModificationResponse;
 
 import java.io.File;
 import java.util.HashMap;
@@ -69,7 +72,7 @@ public class TownManager {
 		return this.towns.keySet();
 	}
 
-	public void createTown(Player player, Location signLoc, String name) throws TKTownsException {
+	public TownModificationResponse createTown(Player player, Location signLoc, String name) throws TKTownsException {
 		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(signLoc, true, null);
 		if(claim == null) {
 			throw new TKTownsException("Your sign is not in a GriefPrevention claim.");
@@ -90,7 +93,7 @@ public class TownManager {
 		this.config.saveTown(town);
 	}
 
-	public void deleteTown(Player player, String name) throws TKTownsException {
+	public TownModificationResponse deleteTown(Player player, String name) throws TKTownsException {
 		Town town = null;
 		if(name != null) {
 			town = this.towns.get(town);
@@ -183,7 +186,7 @@ public class TownManager {
 		return ret;
 	}
 
-	public void createRealestate(Player player, Location loc, String name) throws TKTownsException {
+	public RealestateModificationResponse createRealestate(Player player, Location loc, String name) throws TKTownsException {
 		// TODO Check to make sure they want to put their Town up for sale (protection against standing in the wrong claim
 		if(this.getRealEstateAtPlayerLocation(player) != null) {
 			throw new TKTownsException("This is all ready a piece of Real Estate.");
@@ -215,7 +218,7 @@ public class TownManager {
 		this.config.saveTown(town); //save the town now that the realestate is created.
 	}
 
-	public void sellRealestate(Player player, String amount) throws TKTownsException, IllegalArgumentException {
+	public RealestateModificationResponse sellRealestate(Player player, String amount) throws TKTownsException, IllegalArgumentException {
 		if(amount == null) {
 			throw new IllegalArgumentException("Amount must be specified.");
 		}
@@ -234,7 +237,7 @@ public class TownManager {
 		}
 	}
 
-	public void leaseRealestate(Player player, String amount, String downpayment, String period) throws TKTownsException, IllegalArgumentException {
+	public RealestateModificationResponse leaseRealestate(Player player, String amount, String downpayment, String period) throws TKTownsException, IllegalArgumentException {
 		if(amount == null || period == null || downpayment == null) {
 			throw new IllegalArgumentException("Amount must be specified.");
 		}
@@ -254,7 +257,7 @@ public class TownManager {
 		//TODO: Do that scheduling thing
 	}
 	
-	public void rentRealestate(Player player, String downpayment, String reaccuring) throws TKTownsException, IllegalArgumentException {
+	public RealestateModificationResponse rentRealestate(Player player, String downpayment, String reaccuring) throws TKTownsException, IllegalArgumentException {
 		if(reaccuring == null ||  downpayment == null) {
 			throw new IllegalArgumentException("Amount must be specified.");
 		}
@@ -274,7 +277,7 @@ public class TownManager {
 		
 	}
 
-	public void buyRealestate(Player player) throws TKTownsException {
+	public RealestateModificationResponse buyRealestate(Player player) throws TKTownsException {
 		RealEstate re = this.getRealEstateAtPlayerLocation(player);
 		if(re == null) {
 			throw new TKTownsException("Your are not standing in a piece of RealEstate.");
@@ -291,7 +294,7 @@ public class TownManager {
 		return outposts;
 	}
 
-	public void createOutpost(Player player, Location loc, String name) throws TKTownsException {
+	public OutpostModificationResponse createOutpost(Player player, Location loc, String name) throws TKTownsException {
 		Town town = this.getTownMayorOf(player);
 		if(town == null || !town.isMayor(player)) {
 			throw new TKTownsException("Only the mayor of a town can create outposts.");
@@ -308,7 +311,7 @@ public class TownManager {
 		this.config.saveTown(town); //save town so we keep the outpost saved.
 	}
 
-	public void deleteOutpost(Player player, String name) throws TKTownsException {
+	public OutpostModificationResponse deleteOutpost(Player player, String name) throws TKTownsException {
 		RealEstate re = this.getRealEstateAtPlayerLocation(player);
 		if(re instanceof Outpost) {
 			Outpost out = (Outpost) re;
@@ -337,7 +340,7 @@ public class TownManager {
 		return town.getResidents();
 	}
 
-	public void addResident(Player player, String name) throws TKTownsException {
+	public TownModificationResponse addResident(Player player, String name) throws TKTownsException {
 		Town town = this.getTownMayorOf(player);
 		Player resident = Bukkit.getPlayer(name);
 		if(town == null || !town.isMayor(player)) {
@@ -350,7 +353,7 @@ public class TownManager {
 		this.config.saveTown(town); //save town with the new residents.
 	}
 
-	public void deleteResident(Player player, String name) throws TKTownsException {
+	public TownModificationResponse deleteResident(Player player, String name) throws TKTownsException {
 		Town town = this.getTownMayorOf(player);
 		Player resident = Bukkit.getPlayer(name);
 		if(town == null || !town.isMayor(player)) {
