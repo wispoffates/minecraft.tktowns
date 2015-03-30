@@ -1,6 +1,10 @@
 package io.github.wispoffates.minecraft.tktowns;
 
-import io.github.wispoffates.minecraft.tktowns.RealEstate.Status;
+import io.github.wispoffates.minecraft.tktowns.api.TownManager;
+import io.github.wispoffates.minecraft.tktowns.api.impl.Outpost;
+import io.github.wispoffates.minecraft.tktowns.api.impl.RealEstate;
+import io.github.wispoffates.minecraft.tktowns.api.impl.Town;
+import io.github.wispoffates.minecraft.tktowns.api.impl.RealEstate.Status;
 import io.github.wispoffates.minecraft.tktowns.datastore.DataStore;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
 
@@ -25,18 +29,19 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPistonEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.google.common.base.Optional;
 
 public class TKTowns extends JavaPlugin implements Listener {
+	
+	protected final static String TKTOWNS_HEADER 	   	= "--- TKTowns ---";
+	protected final static String TKTOWNS_ERROR_HEADER 	= "--- TKTowns Error! ---";
 	
 	private static final Logger log = Logger.getLogger("Minecraft");
     public static Economy econ = null;
@@ -105,16 +110,16 @@ public class TKTowns extends JavaPlugin implements Listener {
     	//See if it is a modification of a sign we care about
     	if(TownManager.TKTOWNS_SIGN_HEADER.equalsIgnoreCase(signEvent.getLine(0))) {
     		try {
-				TownManager.instance.handleSignEdit(signEvent.getPlayer(), signEvent);
+				TownManager.get().handleSignEdit(signEvent.getPlayer(), signEvent);
 				signEvent.getPlayer().sendMessage("Town created.  Welcome Mayor");
 			} catch (IndexOutOfBoundsException e) {
 				Player player = signEvent.getPlayer();
-				player.sendMessage(TownManager.TKTOWNS_ERROR_HEADER);
+				player.sendMessage(TKTOWNS_ERROR_HEADER);
 				player.sendMessage(e.getClass().getName() + " :: " + e.getMessage());
 				e.printStackTrace();
 			} catch (TKTownsException e) {
 				Player player = signEvent.getPlayer();
-				player.sendMessage(TownManager.TKTOWNS_ERROR_HEADER);
+				player.sendMessage(TKTOWNS_ERROR_HEADER);
 				player.sendMessage(e.getClass().getName() + " :: " + e.getMessage());
 				e.printStackTrace();
 			}
@@ -158,23 +163,23 @@ public class TKTowns extends JavaPlugin implements Listener {
     protected boolean handleTKTownsSign(Optional<Player> player, Block block) {
     	//is the block a sign?
     	 if (block.getType() == Material.SIGN && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
-    		 return TownManager.instance.handleSignBreak(player, block);
+    		 return TownManager.get().handleSignBreak(player, block);
          }
     	 
     	 if (block.getType() == Material.SIGN_POST && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
-    		 return TownManager.instance.handleSignBreak(player, block);
+    		 return TownManager.get().handleSignBreak(player, block);
          }
     	 
     	 //is the block a sign?
     	 if (block.getType() == Material.WALL_SIGN && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
-    		 return TownManager.instance.handleSignBreak(player, block);
+    		 return TownManager.get().handleSignBreak(player, block);
          }
     	 
     	 //Is a sign attached to it?
     	for (BlockFace f : BlockFace.values()) {
     		Block relative = block.getRelative(f);
             if (relative.getType() == Material.WALL_SIGN && !relative.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
-            	return TownManager.instance.handleSignBreak(player, block);
+            	return TownManager.get().handleSignBreak(player, block);
             }
         }
         return false;
@@ -198,7 +203,7 @@ public class TKTowns extends JavaPlugin implements Listener {
 				} else if(args[0].equalsIgnoreCase("list")) {
 					//List all the towns
 					Set<String> towns = TKTowns.townManager.listTowns(player);
-					player.sendMessage(TownManager.TKTOWNS_HEADER);
+					player.sendMessage(TKTOWNS_HEADER);
 					player.sendMessage("Towns: " + TKTowns.collectionToString(towns));
 				} else if(args[0].equalsIgnoreCase("delete")) {
 					TKTowns.townManager.deleteTown(player,argsList.get(1));
@@ -303,7 +308,7 @@ public class TKTowns extends JavaPlugin implements Listener {
 			}
 		} catch (Exception e) {
 			Player player = (Player) sender;
-			player.sendMessage(TownManager.TKTOWNS_ERROR_HEADER);
+			player.sendMessage(TKTOWNS_ERROR_HEADER);
 			player.sendMessage(e.getClass().getName() + " :: " + e.getMessage());
 			e.printStackTrace();
 			return true;

@@ -1,6 +1,6 @@
 package io.github.wispoffates.minecraft.tktowns.datastore;
 
-import io.github.wispoffates.minecraft.tktowns.Town;
+import io.github.wispoffates.minecraft.tktowns.api.impl.Town;
 
 import java.util.List;
 import java.util.Map;

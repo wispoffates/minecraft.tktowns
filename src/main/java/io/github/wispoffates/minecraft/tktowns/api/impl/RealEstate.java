@@ -1,5 +1,7 @@
-package io.github.wispoffates.minecraft.tktowns;
+package io.github.wispoffates.minecraft.tktowns.api.impl;
 
+import io.github.wispoffates.minecraft.tktowns.TKTowns;
+import io.github.wispoffates.minecraft.tktowns.api.TownManager;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
 
 import java.util.UUID;
@@ -55,14 +57,14 @@ public class RealEstate {
 	
 	
 	/** Empty constructor for GSON*/
-	RealEstate() {
+	public RealEstate() {
 		
 	}
 
 	/**
 	 *  Owned Constructor
 	 */
-	RealEstate(Claim claim, SignLocation loc, Town parent, String name) {
+	public RealEstate(Claim claim, SignLocation loc, Town parent, String name) {
 		if(parent != null) {
 			this.parent = Optional.of(parent);
 			this.parentId = parent.getId();
@@ -197,7 +199,7 @@ public class RealEstate {
 	
 	public Town getParent() {
 		if(!parent.isPresent())
-			parent = Optional.of(TownManager.instance.getTownById(parentId));
+			parent = Optional.of(TownManager.get().getTownById(parentId));
 		
 		return parent.get();
 	}

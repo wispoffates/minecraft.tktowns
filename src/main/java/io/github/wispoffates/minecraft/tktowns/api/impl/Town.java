@@ -1,4 +1,6 @@
-package io.github.wispoffates.minecraft.tktowns;
+package io.github.wispoffates.minecraft.tktowns.api.impl;
+
+import io.github.wispoffates.minecraft.tktowns.TKTowns;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -118,8 +120,12 @@ public class Town  extends RealEstate {
 		return -1;
 	}
 
-	protected Map<String, RealEstate> getChildren() {
+	public Map<String, RealEstate> getChildren() {
 		return children;
+	}
+	
+	public Map<String, Outpost> getOutposts() {
+		return this.outposts;
 	}
 	
 	public void addChild(RealEstate re) {

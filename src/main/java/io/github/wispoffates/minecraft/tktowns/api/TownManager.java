@@ -1,6 +1,10 @@
-package io.github.wispoffates.minecraft.tktowns;
+package io.github.wispoffates.minecraft.tktowns.api;
 
-import io.github.wispoffates.minecraft.tktowns.RealEstate.SignLocation;
+import io.github.wispoffates.minecraft.tktowns.TKTowns;
+import io.github.wispoffates.minecraft.tktowns.api.impl.Outpost;
+import io.github.wispoffates.minecraft.tktowns.api.impl.RealEstate;
+import io.github.wispoffates.minecraft.tktowns.api.impl.RealEstate.SignLocation;
+import io.github.wispoffates.minecraft.tktowns.api.impl.Town;
 import io.github.wispoffates.minecraft.tktowns.datastore.DataStore;
 import io.github.wispoffates.minecraft.tktowns.datastore.YamlStore;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
@@ -27,10 +31,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import com.google.common.base.Optional;
 
 public class TownManager {
-	
-	protected final static String TKTOWNS_HEADER 	   	= "--- TKTowns ---";
-	protected final static String TKTOWNS_ERROR_HEADER 	= "--- TKTowns Error! ---";
-	protected final static String TKTOWNS_METADATA_TAG 	= "TKTowns";
+	public final static String TKTOWNS_METADATA_TAG 	= "TKTowns";
 	public static String TKTOWNS_SIGN_HEADER           	= "[TKTowns]"; //not final so I can make it configurable
 	
 	//singleton instance
@@ -42,7 +43,7 @@ public class TownManager {
 	protected Map<UUID,Town> townsById; //secondary index to get towns by id
 	protected DataStore config;
 	
-	protected TownManager(File fileConfiguration) {
+	public TownManager(File fileConfiguration) {
 		towns = new HashMap<String,Town>();
 		townsById = new HashMap<UUID, Town>();
 		instance = this;
@@ -54,6 +55,10 @@ public class TownManager {
 		for(Town t : this.towns.values()) {
 			this.townsById.put(t.getId(), t);
 		}
+	}
+	
+	public static TownManager get() {
+		return TownManager.instance;
 	}
 	
 	/**
@@ -194,7 +199,7 @@ public class TownManager {
 		if(claim.parent == null) {
 			throw new TKTownsException("This claim is not part of a town.");
 		}
-		if(claim.parent.getID().equals(town.id)) {
+		if(claim.parent.getID().equals(town.getId())) {
 			throw new TKTownsException("You are not the mayor of this claim's town.");
 		}
 		if(town.getChildren().containsKey(name)) {
@@ -281,7 +286,7 @@ public class TownManager {
 		Set<Outpost> outposts = new HashSet<Outpost>();
 		Set<Town> towns = this.getTownsAPlayerIsResident(player);
 		for(Town town : towns) {
-			outposts.addAll(town.outposts.values());
+			outposts.addAll(town.getOutposts().values());
 		}
 		return outposts;
 	}
@@ -295,7 +300,7 @@ public class TownManager {
 		if(claim == null) {
 			throw new TKTownsException("You are not standing in a GriefPrevention claim.");
 		}
-		if(town.outposts.containsKey(name)) {
+		if(town.getOutposts().containsKey(name)) {
 			throw new TKTownsException("An outpost with that name all ready exists.");
 		}
 		Outpost out = new Outpost(claim, SignLocation.fromLocation(loc), town, name);
@@ -447,11 +452,6 @@ public class TownManager {
 			p.get().sendMessage("TKTowns: You can not break town signs");
 		}
 		return true;
-	}
-	
-	public static class TownModificationResponse {
-		public String msg;
-		  
 	}
 	
 }

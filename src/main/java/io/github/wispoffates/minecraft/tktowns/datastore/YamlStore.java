@@ -1,6 +1,6 @@
 package io.github.wispoffates.minecraft.tktowns.datastore;
 
-import io.github.wispoffates.minecraft.tktowns.Town;
+import io.github.wispoffates.minecraft.tktowns.api.impl.Town;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
