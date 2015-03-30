@@ -4,8 +4,8 @@ import me.ryanhamshire.GriefPrevention.Claim;
 
 public class Outpost extends RealEstate {
 
-	Outpost(Claim claim, Town parent, String name) {
-		super(claim, parent, name);
+	Outpost(Claim claim, SignLocation loc, Town parent, String name) {
+		super(claim, loc, parent, name);
 	}
 
 }

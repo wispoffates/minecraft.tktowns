@@ -2,6 +2,7 @@ package io.github.wispoffates.minecraft.tktowns;
 
 import io.github.wispoffates.minecraft.tktowns.RealEstate.Status;
 import io.github.wispoffates.minecraft.tktowns.datastore.DataStore;
+import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,14 +14,29 @@ import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPistonEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.block.LeavesDecayEvent;
+import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class TKTowns extends JavaPlugin {
+import com.google.common.base.Optional;
+
+public class TKTowns extends JavaPlugin implements Listener {
 	
 	private static final Logger log = Logger.getLogger("Minecraft");
     public static Economy econ = null;
@@ -28,6 +44,8 @@ public class TKTowns extends JavaPlugin {
     public static Chat chat = null;
     public static TownManager townManager = null;
     public static DataStore config = null;
+    
+    public static TKTowns plugin = null;
     
 	@Override
 	public void onEnable() {
@@ -42,7 +60,9 @@ public class TKTowns extends JavaPlugin {
         setupChat();
         
         TKTowns.townManager = new TownManager(this.getDataFolder());
+        this.getServer().getPluginManager().registerEvents(this, this);
         
+        TKTowns.plugin = this;
         log.info(String.format("[%s] Eanbled Version %s", getDescription().getName(), getDescription().getVersion()));
 	}
 	
@@ -79,6 +99,87 @@ public class TKTowns extends JavaPlugin {
         return chat != null;
     }
     
+    //Handle sign changes
+    @EventHandler(priority=EventPriority.HIGHEST)
+    public void onSignChangeEvent(SignChangeEvent signEvent) {
+    	//See if it is a modification of a sign we care about
+    	if(TownManager.TKTOWNS_SIGN_HEADER.equalsIgnoreCase(signEvent.getLine(0))) {
+    		try {
+				TownManager.instance.handleSignEdit(signEvent.getPlayer(), signEvent);
+				signEvent.getPlayer().sendMessage("Town created.  Welcome Mayor");
+			} catch (IndexOutOfBoundsException e) {
+				Player player = signEvent.getPlayer();
+				player.sendMessage(TownManager.TKTOWNS_ERROR_HEADER);
+				player.sendMessage(e.getClass().getName() + " :: " + e.getMessage());
+				e.printStackTrace();
+			} catch (TKTownsException e) {
+				Player player = signEvent.getPlayer();
+				player.sendMessage(TownManager.TKTOWNS_ERROR_HEADER);
+				player.sendMessage(e.getClass().getName() + " :: " + e.getMessage());
+				e.printStackTrace();
+			}
+    	}
+    }
+    
+    //stop breaking of our signs 
+    @EventHandler(priority=EventPriority.HIGHEST)
+    public void onBlockBreakEvent(BlockBreakEvent breakEvent) {
+    	if(this.handleTKTownsSign(Optional.of(breakEvent.getPlayer()),breakEvent.getBlock())) {
+    		breakEvent.setCancelled(true);
+    	}
+    }
+    
+    @EventHandler(priority=EventPriority.HIGHEST)
+    public void onBlockPistonExtendEvent(BlockPistonExtendEvent breakEvent) {
+    	if(this.handleTKTownsSign(Optional.<Player>absent(),breakEvent.getBlock())) {
+    		breakEvent.setCancelled(true);
+    	}
+    }
+    
+    @EventHandler(priority=EventPriority.HIGHEST)
+    public void onBlockPistonetractEvent(BlockPistonRetractEvent breakEvent) {
+    	if(this.handleTKTownsSign(Optional.<Player>absent(),breakEvent.getBlock())) {
+    		breakEvent.setCancelled(true);
+    	}
+    }
+    
+    @EventHandler(priority=EventPriority.HIGHEST)
+    public void onLeavesDecayEvent(LeavesDecayEvent breakEvent) {
+    	if(this.handleTKTownsSign(Optional.<Player>absent(),breakEvent.getBlock())) {
+    		breakEvent.setCancelled(true);
+    	}
+    }
+    
+    /**
+     * 
+     * @param block
+     * @return true if we the event should be cancelled
+     */
+    protected boolean handleTKTownsSign(Optional<Player> player, Block block) {
+    	//is the block a sign?
+    	 if (block.getType() == Material.SIGN && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+    		 return TownManager.instance.handleSignBreak(player, block);
+         }
+    	 
+    	 if (block.getType() == Material.SIGN_POST && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+    		 return TownManager.instance.handleSignBreak(player, block);
+         }
+    	 
+    	 //is the block a sign?
+    	 if (block.getType() == Material.WALL_SIGN && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+    		 return TownManager.instance.handleSignBreak(player, block);
+         }
+    	 
+    	 //Is a sign attached to it?
+    	for (BlockFace f : BlockFace.values()) {
+    		Block relative = block.getRelative(f);
+            if (relative.getType() == Material.WALL_SIGN && !relative.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+            	return TownManager.instance.handleSignBreak(player, block);
+            }
+        }
+        return false;
+    }
+    
     public boolean onCommand( CommandSender sender, Command cmd, String label, String[] args) {
 		//Lets make a frame breaking mod since they are weird 
 		try {
@@ -99,9 +200,6 @@ public class TKTowns extends JavaPlugin {
 					Set<String> towns = TKTowns.townManager.listTowns(player);
 					player.sendMessage(TownManager.TKTOWNS_HEADER);
 					player.sendMessage("Towns: " + TKTowns.collectionToString(towns));
-				} else if(args[0].equalsIgnoreCase("create")) {
-					TKTowns.townManager.createTown(player,argsList.get(1));
-					player.sendMessage("Town created.");
 				} else if(args[0].equalsIgnoreCase("delete")) {
 					TKTowns.townManager.deleteTown(player,argsList.get(1));
 					player.sendMessage("Town deleted.");
@@ -138,9 +236,7 @@ public class TKTowns extends JavaPlugin {
 					player.sendMessage(TKTowns.formatRealestate(re, false));
 				} else if(args[0].equalsIgnoreCase("list")) {
 					TKTowns.townManager.listRealestate(player, argsList.get(1));
-				} else if(args[0].equalsIgnoreCase("create")) {
-					TKTowns.townManager.createRealestate(player, argsList.get(1));
-					player.sendMessage("Real Estate created.");
+				
 				} else if(args[0].equalsIgnoreCase("sell")) {
 					TKTowns.townManager.sellRealestate(player, argsList.get(1));
 					player.sendMessage("Real Estate put up for sale.");
@@ -168,9 +264,6 @@ public class TKTowns extends JavaPlugin {
 						sb.append(out.getName() + " ");
 					}
 					player.sendMessage(sb.toString());
-				} else if(args[0].equalsIgnoreCase("create")) {
-					TKTowns.townManager.createOutpost(player,argsList.get(1));
-					player.sendMessage("Outpost created.");
 				} else if(args[0].equalsIgnoreCase("delete")) {
 					TKTowns.townManager.deleteOutpost(player,argsList.get(1));
 					player.sendMessage("Outpost deleted.");

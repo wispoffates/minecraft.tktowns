@@ -1,5 +1,6 @@
 package io.github.wispoffates.minecraft.tktowns;
 
+import io.github.wispoffates.minecraft.tktowns.RealEstate.SignLocation;
 import io.github.wispoffates.minecraft.tktowns.datastore.DataStore;
 import io.github.wispoffates.minecraft.tktowns.datastore.YamlStore;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
@@ -16,13 +17,21 @@ import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.metadata.FixedMetadataValue;
+
+import com.google.common.base.Optional;
 
 public class TownManager {
 	
-	protected final static String TKTOWNS_HEADER = "--- TKTowns ---";
-	protected final static String TKTOWNS_ERROR_HEADER = "--- TKTowns Error! ---";
+	protected final static String TKTOWNS_HEADER 	   	= "--- TKTowns ---";
+	protected final static String TKTOWNS_ERROR_HEADER 	= "--- TKTowns Error! ---";
+	protected final static String TKTOWNS_METADATA_TAG 	= "TKTowns";
+	public static String TKTOWNS_SIGN_HEADER           	= "[TKTowns]"; //not final so I can make it configurable
 	
 	//singleton instance
 	protected static TownManager instance;
@@ -55,10 +64,10 @@ public class TownManager {
 		return this.towns.keySet();
 	}
 
-	public void createTown(Player player, String name) throws TKTownsException {
-		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), true, null);
+	public void createTown(Player player, Location signLoc, String name) throws TKTownsException {
+		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(signLoc, true, null);
 		if(claim == null) {
-			throw new TKTownsException("You are not standing in a GriefPrevention claim.");
+			throw new TKTownsException("Your sign is not in a GriefPrevention claim.");
 		}
 		if(this.towns.containsKey(name)) {
 			throw new TKTownsException("A town with that name all ready exists.");
@@ -67,7 +76,7 @@ public class TownManager {
 			throw new TKTownsException("You do not own this claim.");
 		}
 		
-		Town town = new Town(claim,name);
+		Town town = new Town(claim,SignLocation.fromLocation(signLoc),name);
 		town.setMayor(player);
 		town.addResident(player);
 		towns.put(name, town);
@@ -169,7 +178,7 @@ public class TownManager {
 		return ret;
 	}
 
-	public void createRealestate(Player player, String name) throws TKTownsException {
+	public void createRealestate(Player player, Location loc, String name) throws TKTownsException {
 		// TODO Check to make sure they want to put their Town up for sale (protection against standing in the wrong claim
 		if(this.getRealEstateAtPlayerLocation(player) != null) {
 			throw new TKTownsException("This is all ready a piece of Real Estate.");
@@ -196,7 +205,7 @@ public class TownManager {
 			throw new TKTownsException("You do not own this claim.");
 		}*/
 		
-		RealEstate re = new RealEstate(claim, town, name);
+		RealEstate re = new RealEstate(claim, SignLocation.fromLocation(loc), town, name);
 		town.addChild(re);
 		this.config.saveTown(town); //save the town now that the realestate is created.
 	}
@@ -277,7 +286,7 @@ public class TownManager {
 		return outposts;
 	}
 
-	public void createOutpost(Player player, String name) throws TKTownsException {
+	public void createOutpost(Player player, Location loc, String name) throws TKTownsException {
 		Town town = this.getTownMayorOf(player);
 		if(town == null || !town.isMayor(player)) {
 			throw new TKTownsException("Only the mayor of a town can create outposts.");
@@ -289,7 +298,7 @@ public class TownManager {
 		if(town.outposts.containsKey(name)) {
 			throw new TKTownsException("An outpost with that name all ready exists.");
 		}
-		Outpost out = new Outpost(claim, town, name);
+		Outpost out = new Outpost(claim, SignLocation.fromLocation(loc), town, name);
 		town.addOutpost(out);
 		this.config.saveTown(town); //save town so we keep the outpost saved.
 	}
@@ -415,5 +424,34 @@ public class TownManager {
 		return townsById.get(id);
 	}
 
+	public boolean handleSignEdit(Player player,SignChangeEvent signEvent) throws IndexOutOfBoundsException, TKTownsException {
+		if("[Create Town]".equalsIgnoreCase(signEvent.getLine(1))) {
+			if(signEvent.getLine(2) != null) {
+				this.createTown(player, signEvent.getBlock().getLocation(), signEvent.getLine(2));
+				signEvent.setLine(0, "Welcome to");
+				signEvent.setLine(1, signEvent.getLine(2));
+				signEvent.setLine(2, null);
+				signEvent.setLine(3, null);
+				//TODO: Real meta data just setting this so that the break code can be tested.
+				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Town sign!")));
+				return true;
+			} else {
+				throw new TKTownsException("The second line must be the name of the new town.");
+			}
+		}
+		return true;
+	}
+	
+	public boolean handleSignBreak(Optional<Player> p, Block block) {
+		if(p.isPresent()) {
+			p.get().sendMessage("TKTowns: You can not break town signs");
+		}
+		return true;
+	}
+	
+	public static class TownModificationResponse {
+		public String msg;
+		  
+	}
 	
 }

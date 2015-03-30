@@ -44,8 +44,8 @@ public class Town  extends RealEstate {
 	 * @param claim GPClaim that this town.
 	 * @param name Name of the town.
 	 */
-	public Town(Claim claim, String name) {
-		super(claim,null,name);
+	public Town(Claim claim, SignLocation loc, String name) {
+		super(claim,loc,null,name);
 		this.children = new HashMap<String,RealEstate>();
 		this.outposts = new HashMap<String,Outpost>();
 		this.residentsIds = new HashSet<UUID>();

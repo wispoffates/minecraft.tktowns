@@ -7,7 +7,9 @@ import java.util.UUID;
 import net.milkbowl.vault.economy.EconomyResponse;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import com.google.common.base.Optional;
@@ -32,8 +34,12 @@ public class RealEstate {
 	transient protected Optional<OfflinePlayer> owner = Optional.absent();
 	protected UUID ownerId = null;
 	
+	//claim markers (gp subclaim ids are not unique so we need another anchor)
 	transient protected Optional<Claim> claim = Optional.absent();
-	protected Long gpClaimId = -1L;
+	transient protected Optional<Block> sign = Optional.absent();
+	protected SignLocation loc = null;
+	
+	//protected Long gpClaimId = -1L;
 	
 
 	protected String name;
@@ -56,7 +62,7 @@ public class RealEstate {
 	/**
 	 *  Owned Constructor
 	 */
-	RealEstate(Claim claim, Town parent, String name) {
+	RealEstate(Claim claim, SignLocation loc, Town parent, String name) {
 		if(parent != null) {
 			this.parent = Optional.of(parent);
 			this.parentId = parent.getId();
@@ -66,7 +72,7 @@ public class RealEstate {
 		}
 		this.name = name;
 		this.ownerId = claim.ownerID;
-		this.gpClaimId = claim.getID();
+		this.loc = loc;
 		this.id = UUID.randomUUID();
 	}
 	
@@ -80,8 +86,8 @@ public class RealEstate {
 	 * @param cost
 	 *            Cost of this piece of real estate.
 	 */
-	RealEstate(Claim claim, Town parent, String name, double cost) {
-		this(claim, parent, name);
+	RealEstate(Claim claim, SignLocation loc, Town parent, String name, double cost) {
+		this(claim, loc, parent, name);
 		this.sell(cost);
 	}
 
@@ -99,8 +105,8 @@ public class RealEstate {
 	 * @param cost
 	 *            Cost of the lease.
 	 */
-	RealEstate(Claim claim, Town parent, String name,  int leaseTime, double downpayment, double recurringCost) {
-		this(claim, parent, name);
+	RealEstate(Claim claim, SignLocation loc, Town parent, String name,  int leaseTime, double downpayment, double recurringCost) {
+		this(claim, loc, parent, name);
 		this.lease(leaseTime, downpayment, recurringCost);
 		this.status = Status.FORLEASE;
 	}
@@ -271,15 +277,25 @@ public class RealEstate {
 	}
 
 	public Claim getClaim() {
-		if(!claim.isPresent())
-			claim = Optional.of(GriefPrevention.instance.dataStore.getClaim(gpClaimId));
+		if(!claim.isPresent()) 
+			claim = Optional.of(GriefPrevention.instance.dataStore.getClaimAt(this.loc.asLocation(), true, null));
 		
 		return claim.get();
 	}
+	
+	public SignLocation getLoc() {
+		return loc;
+	}
 
-	public void setClaim(Claim claim) {
-		this.claim = Optional.of(claim);
-		this.gpClaimId = claim.getID();
+	public void setLoc(SignLocation loc) {
+		this.loc = loc;
+	}
+
+	public Block getSign() {
+		if(!sign.isPresent()) 
+			sign = Optional.of(Bukkit.getWorld(this.loc.worldName).getBlockAt(this.loc.asLocation()));
+		
+		return sign.get();
 	}
 
 	public void setParentId(UUID parentId) {
@@ -324,6 +340,29 @@ public class RealEstate {
 			}
 		}
 		return sb.toString();
+	}
+	
+	public static class SignLocation {
+		
+		public SignLocation(String worldname, int x, int y, int z) {
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			this.worldName = worldname;
+		}
+		
+		public String worldName;
+		public int x;
+		public int y;
+		public int z;
+		
+		public Location asLocation() {
+			return new Location(Bukkit.getWorld(this.worldName),this.x, this.y, this.z);
+		}
+		
+		public static final SignLocation fromLocation(Location location) {
+			return new SignLocation(location.getWorld().getName(),location.getBlockX(),location.getBlockY(),location.getBlockZ());
+		}
 	}
 	
 }
