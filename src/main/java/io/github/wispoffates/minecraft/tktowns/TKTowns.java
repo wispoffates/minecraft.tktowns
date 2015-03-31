@@ -7,6 +7,8 @@ import io.github.wispoffates.minecraft.tktowns.api.impl.Town;
 import io.github.wispoffates.minecraft.tktowns.api.impl.RealEstate.Status;
 import io.github.wispoffates.minecraft.tktowns.datastore.DataStore;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
+import io.github.wispoffates.minecraft.tktowns.responses.GenericModificationResponse;
+import io.github.wispoffates.minecraft.tktowns.responses.TownModificationResponse;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -243,17 +245,17 @@ public class TKTowns extends JavaPlugin implements Listener {
 					TKTowns.townManager.listRealestate(player, argsList.get(1));
 				
 				} else if(args[0].equalsIgnoreCase("sell")) {
-					TKTowns.townManager.sellRealestate(player, argsList.get(1));
-					player.sendMessage("Real Estate put up for sale.");
+					GenericModificationResponse gmr = TKTowns.townManager.sellRealestate(player, argsList.get(1));
+					player.sendMessage(gmr.getMessage());
 				} else if(args[0].equalsIgnoreCase("lease")) {
-					TKTowns.townManager.leaseRealestate(player, argsList.get(1),argsList.get(2), argsList.get(3));
-					player.sendMessage("Real Estate put up for lease.");
+					GenericModificationResponse gmr = TKTowns.townManager.leaseRealestate(player, argsList.get(1),argsList.get(2), argsList.get(3));
+					player.sendMessage(gmr.getMessage());
 				} else if(args[0].equalsIgnoreCase("rent")) {
-					TKTowns.townManager.rentRealestate(player, argsList.get(1),argsList.get(2));
-					player.sendMessage("Real Estate put up for rent.");
+					GenericModificationResponse gmr = TKTowns.townManager.rentRealestate(player, argsList.get(1),argsList.get(2));
+					player.sendMessage(gmr.getMessage());
 				} else if(args[0].equalsIgnoreCase("buy")) {
-					TKTowns.townManager.buyRealestate(player);
-					player.sendMessage("Congratulations you now own this Real Estate.");
+					GenericModificationResponse gmr = TKTowns.townManager.buyRealestate(player);
+					player.sendMessage(gmr.getMessage());
 				} else {
 					Set<RealEstate> re = TKTowns.townManager.listRealestate(player, argsList.get(1));
 					player.sendMessage(TKTowns.formatRealestate(re, false));
@@ -270,8 +272,8 @@ public class TKTowns extends JavaPlugin implements Listener {
 					}
 					player.sendMessage(sb.toString());
 				} else if(args[0].equalsIgnoreCase("delete")) {
-					TKTowns.townManager.deleteOutpost(player,argsList.get(1));
-					player.sendMessage("Outpost deleted.");
+					GenericModificationResponse gmr = TKTowns.townManager.deleteOutpost(player,argsList.get(1));
+					player.sendMessage(gmr.getMessage());
 				}
 				return true;
 			} else if(cmdStr.equalsIgnoreCase("tkt_resident") || cmdStr.equalsIgnoreCase("tkres")) {
@@ -298,11 +300,11 @@ public class TKTowns extends JavaPlugin implements Listener {
 					}
 					player.sendMessage(sb.toString());
 				} else if(args[0].equalsIgnoreCase("add")) {
-					TKTowns.townManager.addResident(player,argsList.get(1));
-					player.sendMessage("Resident added.");
+					TownModificationResponse tmr = TKTowns.townManager.addResident(player,argsList.get(1));
+					player.sendMessage(tmr.getMessage());
 				} else if(args[0].equalsIgnoreCase("delete")) {
-					TKTowns.townManager.deleteResident(player,argsList.get(1));
-					player.sendMessage("Resident delted.");
+					TownModificationResponse tmr =  TKTowns.townManager.deleteResident(player,argsList.get(1));
+					player.sendMessage(tmr.getMessage());
 				}
 				return true;
 			}

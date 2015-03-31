@@ -2,26 +2,15 @@ package io.github.wispoffates.minecraft.tktowns.responses;
 
 import io.github.wispoffates.minecraft.tktowns.api.impl.Outpost;
 
-public class OutpostModificationResponse {
-	protected String message;
+public class OutpostModificationResponse extends GenericModificationResponse {
 	protected Outpost outpost;
-	protected boolean success;
 	
 	public OutpostModificationResponse(String message, Outpost outpost, boolean success) {
-		this.message = message;
+		super(message,success);
 		this.outpost = outpost;
-		this.success = success;
-	}
-	
-	public String getMessage() {
-		return message;
 	}
 
 	public Outpost getOutpost() {
 		return outpost;
-	}
-
-	public boolean isSuccess() {
-		return success;
 	}
 }

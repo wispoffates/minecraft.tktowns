@@ -442,22 +442,22 @@ public class TownManager {
 		return townsById.get(id);
 	}
 
-	public boolean handleSignEdit(Player player,SignChangeEvent signEvent) throws IndexOutOfBoundsException, TKTownsException {
+	public TownModificationResponse handleSignEdit(Player player,SignChangeEvent signEvent) throws IndexOutOfBoundsException, TKTownsException {
 		if("[Create Town]".equalsIgnoreCase(signEvent.getLine(1))) {
 			if(signEvent.getLine(2) != null) {
-				this.createTown(player, signEvent.getBlock().getLocation(), signEvent.getLine(2));
+				TownModificationResponse tmr = this.createTown(player, signEvent.getBlock().getLocation(), signEvent.getLine(2));
 				signEvent.setLine(0, "Welcome to");
 				signEvent.setLine(1, signEvent.getLine(2));
 				signEvent.setLine(2, null);
 				signEvent.setLine(3, null);
 				//TODO: Real meta data just setting this so that the break code can be tested.
 				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Town sign!")));
-				return true;
+				return tmr;
 			} else {
 				throw new TKTownsException("The second line must be the name of the new town.");
 			}
 		}
-		return true;
+		return new TownModificationResponse("Unknown sign command! :: " + signEvent.getLine(1),null,false);
 	}
 	
 	public boolean handleSignBreak(Optional<Player> p, Block block) {
