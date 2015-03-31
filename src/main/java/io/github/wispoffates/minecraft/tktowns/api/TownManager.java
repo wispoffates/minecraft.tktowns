@@ -457,6 +457,24 @@ public class TownManager {
 				throw new TKTownsException("The second line must be the name of the new town.");
 			}
 		}
+		
+		if("[Create Realestate]".equalsIgnoreCase(signEvent.getLine(1))) {
+			
+		}
+		
+		if("[Sell]".equalsIgnoreCase(signEvent.getLine(1))) {
+			
+		}
+		
+		if("[Lease]".equalsIgnoreCase(signEvent.getLine(1))) {
+			
+		}
+		
+		if("[Rent]".equalsIgnoreCase(signEvent.getLine(1))) {
+			
+		}
+		
+		//TODO: Show some real help here...
 		return new TownModificationResponse("Unknown sign command! :: " + signEvent.getLine(1),null,false);
 	}
 	
