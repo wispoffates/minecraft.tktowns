@@ -188,7 +188,6 @@ public class TKTowns extends JavaPlugin implements Listener {
     }
     
     public boolean onCommand( CommandSender sender, Command cmd, String label, String[] args) {
-		//Lets make a frame breaking mod since they are weird 
 		try {
 	    	List<String> argsList = Arrays.asList(args);
 			Player player = (Player) sender;
@@ -242,21 +241,9 @@ public class TKTowns extends JavaPlugin implements Listener {
 					Set<RealEstate> re = TKTowns.townManager.listRealestate(player, null);
 					player.sendMessage(TKTowns.formatRealestate(re, false));
 				} else if(args[0].equalsIgnoreCase("list")) {
-					TKTowns.townManager.listRealestate(player, argsList.get(1));
-				
-				} else if(args[0].equalsIgnoreCase("sell")) {
-					GenericModificationResponse gmr = TKTowns.townManager.sellRealestate(player, argsList.get(1));
-					player.sendMessage(gmr.getMessage());
-				} else if(args[0].equalsIgnoreCase("lease")) {
-					GenericModificationResponse gmr = TKTowns.townManager.leaseRealestate(player, argsList.get(1),argsList.get(2), argsList.get(3));
-					player.sendMessage(gmr.getMessage());
-				} else if(args[0].equalsIgnoreCase("rent")) {
-					GenericModificationResponse gmr = TKTowns.townManager.rentRealestate(player, argsList.get(1),argsList.get(2));
-					player.sendMessage(gmr.getMessage());
-				} else if(args[0].equalsIgnoreCase("buy")) {
-					GenericModificationResponse gmr = TKTowns.townManager.buyRealestate(player);
-					player.sendMessage(gmr.getMessage());
-				} else {
+					Set<RealEstate> reals = TKTowns.townManager.listRealestate(player, argsList.get(1));
+					player.sendMessage(TKTowns.formatRealestate(reals, false));
+				}  else {
 					Set<RealEstate> re = TKTowns.townManager.listRealestate(player, argsList.get(1));
 					player.sendMessage(TKTowns.formatRealestate(re, false));
 				}

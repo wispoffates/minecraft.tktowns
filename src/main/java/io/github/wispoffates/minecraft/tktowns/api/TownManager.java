@@ -9,6 +9,7 @@ import io.github.wispoffates.minecraft.tktowns.datastore.DataStore;
 import io.github.wispoffates.minecraft.tktowns.datastore.YamlStore;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TKTownsException;
 import io.github.wispoffates.minecraft.tktowns.exceptions.TownNotFoundException;
+import io.github.wispoffates.minecraft.tktowns.responses.GenericModificationResponse;
 import io.github.wispoffates.minecraft.tktowns.responses.OutpostModificationResponse;
 import io.github.wispoffates.minecraft.tktowns.responses.RealestateModificationResponse;
 import io.github.wispoffates.minecraft.tktowns.responses.TownModificationResponse;
@@ -221,7 +222,7 @@ public class TownManager {
 		return new RealestateModificationResponse(re.getName() + " ceated.",re,true);
 	}
 
-	public RealestateModificationResponse sellRealestate(Player player, String amount) throws TKTownsException, IllegalArgumentException {
+	public RealestateModificationResponse sellRealestate(Player player, Location signLoc, String amount) throws TKTownsException, IllegalArgumentException {
 		if(amount == null) {
 			throw new IllegalArgumentException("Amount must be specified.");
 		}
@@ -241,7 +242,7 @@ public class TownManager {
 		return new RealestateModificationResponse(re.getName() + " put up for sell.",re,true);
 	}
 
-	public RealestateModificationResponse leaseRealestate(Player player, String amount, String downpayment, String period) throws TKTownsException, IllegalArgumentException {
+	public RealestateModificationResponse leaseRealestate(Player player, Location signLoc, String amount, String downpayment, String period) throws TKTownsException, IllegalArgumentException {
 		if(amount == null || period == null || downpayment == null) {
 			throw new IllegalArgumentException("Amount must be specified.");
 		}
@@ -262,7 +263,7 @@ public class TownManager {
 		return new RealestateModificationResponse(re.getName() + " now available for lease.",re,true);
 	}
 	
-	public RealestateModificationResponse rentRealestate(Player player, String downpayment, String reaccuring) throws TKTownsException, IllegalArgumentException {
+	public RealestateModificationResponse rentRealestate(Player player, Location signLoc, String downpayment, String reaccuring) throws TKTownsException, IllegalArgumentException {
 		if(reaccuring == null ||  downpayment == null) {
 			throw new IllegalArgumentException("Amount must be specified.");
 		}
@@ -282,7 +283,7 @@ public class TownManager {
 		return new RealestateModificationResponse(re.getName() + " now available for rent.",re,true);
 	}
 
-	public RealestateModificationResponse buyRealestate(Player player) throws TKTownsException {
+	public RealestateModificationResponse buyRealestate(Player player, Location signLoc) throws TKTownsException {
 		RealEstate re = this.getRealEstateAtPlayerLocation(player);
 		if(re == null) {
 			throw new TKTownsException("Your are not standing in a piece of RealEstate.");
@@ -350,7 +351,7 @@ public class TownManager {
 
 	public TownModificationResponse addResident(Player player, String name) throws TKTownsException {
 		Town town = this.getTownMayorOf(player);
-		Player resident = Bukkit.getPlayer(name);
+		Player resident = getOnlinePlayer(name);
 		if(town == null || !town.isMayor(player)) {
 			throw new TKTownsException("Only the mayor of a town can add residents.");
 		}
@@ -364,7 +365,7 @@ public class TownManager {
 
 	public TownModificationResponse deleteResident(Player player, String name) throws TKTownsException {
 		Town town = this.getTownMayorOf(player);
-		Player resident = Bukkit.getPlayer(name);
+		Player resident = getOnlinePlayer(name);
 		if(town == null || !town.isMayor(player)) {
 			throw new TKTownsException("Only the mayor of a town can remove residents.");
 		}
@@ -374,6 +375,19 @@ public class TownManager {
 		town.removeResident(resident);
 		this.config.saveTown(town); //save town with the new residents.
 		return new TownModificationResponse(resident.getName() + " is no longer a resident of " + town.getName(),town,true);
+	}
+	
+	/**
+	 * Because I hate warnings...
+	 * @param name Name of player to fetch
+	 * @return
+	 */
+	protected Player getOnlinePlayer(String name) {
+		for(Player player : Bukkit.getOnlinePlayers()) {
+			if(player.getName().equals(name))
+				return player;
+		}
+		return null;
 	}
 	
 	protected Town getTownMayorOf(Player player) {
@@ -442,10 +456,11 @@ public class TownManager {
 		return townsById.get(id);
 	}
 
-	public TownModificationResponse handleSignEdit(Player player,SignChangeEvent signEvent) throws IndexOutOfBoundsException, TKTownsException {
+	//TODO: Maybe this should be up in the plugin in layer in not down here in the api?
+	public GenericModificationResponse handleSignEdit(Player player,SignChangeEvent signEvent) throws IndexOutOfBoundsException, TKTownsException {
 		if("[Create Town]".equalsIgnoreCase(signEvent.getLine(1))) {
 			if(signEvent.getLine(2) != null) {
-				TownModificationResponse tmr = this.createTown(player, signEvent.getBlock().getLocation(), signEvent.getLine(2));
+				GenericModificationResponse tmr = this.createTown(player, signEvent.getBlock().getLocation(), signEvent.getLine(2));
 				signEvent.setLine(0, "Welcome to");
 				signEvent.setLine(1, signEvent.getLine(2));
 				signEvent.setLine(2, null);
@@ -459,19 +474,63 @@ public class TownManager {
 		}
 		
 		if("[Create Realestate]".equalsIgnoreCase(signEvent.getLine(1))) {
-			
+			if(signEvent.getLine(2) != null) {
+				GenericModificationResponse tmr = this.createRealestate(player, signEvent.getBlock().getLocation(), signEvent.getLine(2));
+				signEvent.setLine(0, "Welcome to");
+				signEvent.setLine(1, signEvent.getLine(2));
+				signEvent.setLine(2, null);
+				signEvent.setLine(3, null);
+				//TODO: Real meta data just setting this so that the break code can be tested.
+				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Town sign!")));
+				return tmr;
+			} else {
+				throw new TKTownsException("The second line must be the name of the realestate.");
+			}
 		}
 		
 		if("[Sell]".equalsIgnoreCase(signEvent.getLine(1))) {
-			
+			if(signEvent.getLine(2) != null) {
+				GenericModificationResponse tmr = this.sellRealestate(player, signEvent.getBlock().getLocation(), signEvent.getLine(2));
+				signEvent.setLine(0, "For sale");
+				signEvent.setLine(1, signEvent.getLine(2));
+				signEvent.setLine(2, null);
+				signEvent.setLine(3, null);
+				//TODO: Real meta data just setting this so that the break code can be tested.
+				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Town sign!")));
+				return tmr;
+			} else {
+				throw new TKTownsException("The second line must be the amount to sell the realestate for.");
+			}
 		}
 		
 		if("[Lease]".equalsIgnoreCase(signEvent.getLine(1))) {
-			
+			if(signEvent.getLine(2) != null  && signEvent.getLine(3) != null && signEvent.getLine(4) != null) {
+				GenericModificationResponse tmr = this.leaseRealestate(player, signEvent.getBlock().getLocation(), signEvent.getLine(2), signEvent.getLine(3), signEvent.getLine(4));
+				signEvent.setLine(0, "For sale");
+				signEvent.setLine(1, signEvent.getLine(2));
+				signEvent.setLine(2, null);
+				signEvent.setLine(3, null);
+				//TODO: Real meta data just setting this so that the break code can be tested.
+				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Town sign!")));
+				return tmr;
+			} else {
+				throw new TKTownsException("The second line must be the lease amount.  The third line must be the down payment.  The fourth line must be the length of the lease in days");
+			}
 		}
 		
 		if("[Rent]".equalsIgnoreCase(signEvent.getLine(1))) {
-			
+			if(signEvent.getLine(2) != null  && signEvent.getLine(3) != null && signEvent.getLine(4) != null) {
+				GenericModificationResponse tmr = this.rentRealestate(player, signEvent.getBlock().getLocation(), signEvent.getLine(2), signEvent.getLine(3));
+				signEvent.setLine(0, "For sale");
+				signEvent.setLine(1, signEvent.getLine(2));
+				signEvent.setLine(2, null);
+				signEvent.setLine(3, null);
+				//TODO: Real meta data just setting this so that the break code can be tested.
+				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Town sign!")));
+				return tmr;
+			} else {
+				throw new TKTownsException("The second line must be the lease amount.  The third line must be the down payment.");
+			}
 		}
 		
 		//TODO: Show some real help here...
