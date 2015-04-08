@@ -38,11 +38,13 @@ public class RealEstate {
 	
 	//claim markers (gp subclaim ids are not unique so we need another anchor)
 	transient protected Optional<Claim> claim = Optional.absent();
-	transient protected Optional<Block> sign = Optional.absent();
-	protected SignLocation loc = null;
+	transient protected Optional<Block> nameSign = Optional.absent();
+	protected SignLocation nameSignLocation = null;
+	
+	transient protected Optional<Block> saleSign = Optional.absent();
+	protected SignLocation forSaleSignLocation = null;
 	
 	//protected Long gpClaimId = -1L;
-	
 
 	protected String name;
 	protected UUID id;
@@ -74,54 +76,22 @@ public class RealEstate {
 		}
 		this.name = name;
 		this.ownerId = claim.ownerID;
-		this.loc = loc;
+		this.nameSignLocation = loc;
 		this.id = UUID.randomUUID();
 	}
 	
-	/**
-	 * For Sale Constructor
-	 * 
-	 * @param parent
-	 *            Parent Town.
-	 * @param name
-	 *            Name of this piece of real estate.
-	 * @param cost
-	 *            Cost of this piece of real estate.
-	 */
-	RealEstate(Claim claim, SignLocation loc, Town parent, String name, double cost) {
-		this(claim, loc, parent, name);
-		this.sell(cost);
-	}
-
-	/**
-	 * For Lease Constructor.
-	 * 
-	 * @param parent
-	 *            Parent Town.
-	 * @param name
-	 *            Name of this piece of real estate.
-	 * @param leaseTimeUnit
-	 *            TimeUnit of the lease term. (Day,Week,Month,Year)
-	 * @param leaseTime
-	 *            Length of the lease term.
-	 * @param cost
-	 *            Cost of the lease.
-	 */
-	RealEstate(Claim claim, SignLocation loc, Town parent, String name,  int leaseTime, double downpayment, double recurringCost) {
-		this(claim, loc, parent, name);
-		this.lease(leaseTime, downpayment, recurringCost);
-		this.status = Status.FORLEASE;
-	}
 	
-	public void sell(double cost) {
+	public void sell(SignLocation forsaleSign, double cost) {
 		this.downPayment = cost;
 		this.status = Status.FORSALE;
+		this.forSaleSignLocation = forsaleSign;
 	}
 	
-	public void rent(double downpayment, double recurringCost) {
+	public void rent(SignLocation forsaleSign, double downpayment, double recurringCost) {
 		this.recurringCost = recurringCost;
 		this.downPayment = downpayment;
 		this.status = Status.FORRENT;
+		this.forSaleSignLocation = forsaleSign;
 		//rent period set for 24 hours
 	}
 	
@@ -131,11 +101,12 @@ public class RealEstate {
 	 * @param downpayment
 	 * @param recurringCost
 	 */
-	public void lease(int leaseTime, double downpayment, double recurringCost) {
+	public void lease(SignLocation forsaleSign, int leaseTime, double downpayment, double recurringCost) {
 		this.leaseTime = leaseTime;
 		this.recurringCost = recurringCost;
 		this.downPayment = downpayment;
 		this.status = Status.FORLEASE;
+		this.forSaleSignLocation = forsaleSign;
 	}
 	
 	public void forclose() {
@@ -171,7 +142,8 @@ public class RealEstate {
 			default:  //should come to this
 				break;
 		}
-		
+		//break the sign but laeave nothing behind
+		this.getSaleSign().breakNaturally(null);
 	}
 	
 	public void collect() {
@@ -280,24 +252,24 @@ public class RealEstate {
 
 	public Claim getClaim() {
 		if(!claim.isPresent()) 
-			claim = Optional.of(GriefPrevention.instance.dataStore.getClaimAt(this.loc.asLocation(), true, null));
+			claim = Optional.of(GriefPrevention.instance.dataStore.getClaimAt(this.nameSignLocation.asLocation(), true, null));
 		
 		return claim.get();
 	}
 	
 	public SignLocation getLoc() {
-		return loc;
+		return nameSignLocation;
 	}
 
 	public void setLoc(SignLocation loc) {
-		this.loc = loc;
+		this.nameSignLocation = loc;
 	}
 
 	public Block getSign() {
-		if(!sign.isPresent()) 
-			sign = Optional.of(Bukkit.getWorld(this.loc.worldName).getBlockAt(this.loc.asLocation()));
+		if(!nameSign.isPresent()) 
+			nameSign = Optional.of(Bukkit.getWorld(this.nameSignLocation.worldName).getBlockAt(this.nameSignLocation.asLocation()));
 		
-		return sign.get();
+		return nameSign.get();
 	}
 
 	public void setParentId(UUID parentId) {
@@ -365,6 +337,13 @@ public class RealEstate {
 		public static final SignLocation fromLocation(Location location) {
 			return new SignLocation(location.getWorld().getName(),location.getBlockX(),location.getBlockY(),location.getBlockZ());
 		}
+	}
+
+	public Block getSaleSign() {
+		if(!saleSign.isPresent()) {
+			saleSign = Optional.of(Bukkit.getWorld(this.forSaleSignLocation.worldName).getBlockAt(this.forSaleSignLocation.asLocation()));
+		}
+		return saleSign.get();
 	}
 	
 }

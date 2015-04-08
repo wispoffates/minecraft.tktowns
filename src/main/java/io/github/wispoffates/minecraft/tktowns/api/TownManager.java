@@ -100,7 +100,7 @@ public class TownManager {
 		if(name != null) {
 			town = this.towns.get(town);
 		} else {
-			town = this.getTownAtPlayerLocation(player);
+			town = this.getTownAtLocation(player.getLocation()).get();
 		}
 		if(town == null) {
 			throw new TownNotFoundException("No town with that name exists.");
@@ -139,7 +139,7 @@ public class TownManager {
 	public Town listTownInfo(Player player, String name) throws TownNotFoundException {
 		Town town = null;
 		if(name == null) {
-			town = this.getTownAtPlayerLocation(player);
+			town = this.getTownAtLocation(player.getLocation()).get();
 		} else {
 			town = this.towns.get(name);
 		}
@@ -190,8 +190,7 @@ public class TownManager {
 	}
 
 	public RealestateModificationResponse createRealestate(Player player, Location loc, String name) throws TKTownsException {
-		// TODO Check to make sure they want to put their Town up for sale (protection against standing in the wrong claim
-		if(this.getRealEstateAtPlayerLocation(player) != null) {
+		if(this.getRealEstateAtLocation(loc).isPresent()) {
 			throw new TKTownsException("This is all ready a piece of Real Estate.");
 		}
 		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), true, null);
@@ -223,38 +222,49 @@ public class TownManager {
 	}
 
 	public RealestateModificationResponse sellRealestate(Player player, Location signLoc, String amount) throws TKTownsException, IllegalArgumentException {
+		// TODO Check to make sure they want to put their Town up for sale (protection against standing in the wrong claim
 		if(amount == null) {
 			throw new IllegalArgumentException("Amount must be specified.");
 		}
-		RealEstate re = this.getRealEstateAtPlayerLocation(player);
-		if(re == null) {
+		Optional<RealEstate> re = this.getRealEstateAtLocation(signLoc);
+		if(!re.isPresent()) {
 			throw new TKTownsException("Your are not standing in a piece of RealEstate.");
 		}
-		if(!re.getOwner().equals(player.getUniqueId())) {
+		if(!re.get().getOwner().equals(player.getUniqueId())) {
 			throw new TKTownsException("You do not own this RealEstate.");
 		}
+		if(re.get().getStatus() != RealEstate.Status.OWNED) {
+			throw new TKTownsException("RealEstate is all ready for sale, lease or rent.");
+		}
 		try {
-			re.sell(Double.parseDouble(amount));
-			this.config.saveTown(re.getParent()); //save town so we keep the realestate saved.
+			re.get().sell(SignLocation.fromLocation(signLoc), Double.parseDouble(amount));
+			this.config.saveTown(re.get().getParent()); //save town so we keep the realestate saved.
 		} catch(NumberFormatException e) {
 			throw new IllegalArgumentException("The amount must be a double ex: 20.5");
 		}
-		return new RealestateModificationResponse(re.getName() + " put up for sell.",re,true);
+		return new RealestateModificationResponse(re.get().getName() + " put up for sell.",re.get(),true);
 	}
 
 	public RealestateModificationResponse leaseRealestate(Player player, Location signLoc, String amount, String downpayment, String period) throws TKTownsException, IllegalArgumentException {
 		if(amount == null || period == null || downpayment == null) {
 			throw new IllegalArgumentException("Amount must be specified.");
 		}
-		RealEstate re = this.getRealEstateAtPlayerLocation(player);
-		if(re == null) {
+		Optional<RealEstate> reOp = this.getRealEstateAtLocation(signLoc);
+		if(!reOp.isPresent()) {
 			throw new TKTownsException("Your are not standing in a piece of RealEstate.");
+		}
+		RealEstate re = reOp.get();
+		if(re.getParent() == null) {
+			throw new TKTownsException("You cannot sell your town!");
 		}
 		if(!re.getOwner().equals(player.getUniqueId())) {
 			throw new TKTownsException("You do not own this RealEstate.");
 		}
+		if(re.getStatus() != RealEstate.Status.OWNED) {
+			throw new TKTownsException("RealEstate is all ready for sale, lease or rent.");
+		}
 		try {
-			re.lease(Integer.parseInt(period), Double.parseDouble(downpayment), Double.parseDouble(amount));
+			re.lease(SignLocation.fromLocation(signLoc),Integer.parseInt(period), Double.parseDouble(downpayment), Double.parseDouble(amount));
 			this.config.saveTown(re.getParent()); //save town so we keep the realestate saved.
 		} catch(NumberFormatException e) {
 			throw new IllegalArgumentException("The amount must be a double ex: 20.5");
@@ -267,15 +277,19 @@ public class TownManager {
 		if(reaccuring == null ||  downpayment == null) {
 			throw new IllegalArgumentException("Amount must be specified.");
 		}
-		RealEstate re = this.getRealEstateAtPlayerLocation(player);
-		if(re == null) {
+		Optional<RealEstate> reOp = this.getRealEstateAtLocation(signLoc);
+		if(!reOp.isPresent()) {
 			throw new TKTownsException("Your are not standing in a piece of RealEstate.");
 		}
+		RealEstate re = reOp.get();
 		if(!re.getOwner().equals(player.getUniqueId())) {
 			throw new TKTownsException("You do not own this RealEstate.");
 		}
+		if(re.getStatus() != RealEstate.Status.OWNED) {
+			throw new TKTownsException("RealEstate is all ready for sale, lease or rent.");
+		}
 		try {
-			re.rent(Double.parseDouble(downpayment), Double.parseDouble(reaccuring));
+			re.rent(SignLocation.fromLocation(signLoc),Double.parseDouble(downpayment), Double.parseDouble(reaccuring));
 			this.config.saveTown(re.getParent()); //save town so we keep the realestate saved.
 		} catch(NumberFormatException e) {
 			throw new IllegalArgumentException("The amount must be a double ex: 20.5");
@@ -284,10 +298,11 @@ public class TownManager {
 	}
 
 	public RealestateModificationResponse buyRealestate(Player player, Location signLoc) throws TKTownsException {
-		RealEstate re = this.getRealEstateAtPlayerLocation(player);
-		if(re == null) {
+		Optional<RealEstate> reOp = this.getRealEstateAtLocation(signLoc);
+		if(!reOp.isPresent()) {
 			throw new TKTownsException("Your are not standing in a piece of RealEstate.");
 		}
+		RealEstate re = reOp.get();
 		re.buy(player);
 		return new RealestateModificationResponse(re.getName() + " Welcome to your new home.",re,true);
 	}
@@ -320,7 +335,7 @@ public class TownManager {
 	}
 
 	public OutpostModificationResponse deleteOutpost(Player player, String name) throws TKTownsException {
-		RealEstate re = this.getRealEstateAtPlayerLocation(player);
+		RealEstate re = this.getRealEstateAtLocation(player.getLocation()).get();
 		Outpost out;
 		if(re instanceof Outpost) {
 			out = (Outpost) re;
@@ -400,29 +415,32 @@ public class TownManager {
 		return ret;
 	}
 	
-	protected Town getTownAtPlayerLocation(Player player) {
+	protected Optional<Town> getTownAtLocation(Location loc) {
 		Town ret = null;
-		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), true, null);
+		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(loc, true, null);
 		for(Town town : this.towns.values()) {
 			if(town.getClaim().getID() == claim.getID() || town.getClaim().getID() == claim.parent.getID()) {
 				ret = town;
+				break;
 			}
 		}
-		return ret;
+		return Optional.of(ret) ;
 	}
 	
-	protected RealEstate getRealEstateAtPlayerLocation(Player player) {
-		//n^2
+	protected Optional<RealEstate> getRealEstateAtLocation(Location loc) {
 		RealEstate ret = null;
-		Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), true, null);
-		for(Town town : this.towns.values()) {
+		//get the town
+		Optional<Town> townOp = this.getTownAtLocation(loc);
+		if(townOp.isPresent()) {
+			Town town = townOp.get();
 			for(RealEstate re : town.getChildren().values()) {
-				if(re.getClaim().getID() == claim.getID() || re.getClaim().getID() == claim.getID()) {
+				if(re.getClaim().contains(loc, false, false)) {
 					ret = re;
+					break;
 				}
 			}
 		}
-		return ret;
+		return Optional.of(ret);
 	}
 	
 	protected Set<Town> getTownsAPlayerIsResident( Player player ) {
