@@ -110,10 +110,10 @@ public class TKTowns extends JavaPlugin implements Listener {
     @EventHandler(priority=EventPriority.HIGHEST)
     public void onSignChangeEvent(SignChangeEvent signEvent) {
     	//See if it is a modification of a sign we care about
-    	if(TownManager.TKTOWNS_SIGN_HEADER.equalsIgnoreCase(signEvent.getLine(0))) {
+    	if(TownManager.TKTOWNS_TOWN_SIGN_HEADER.equalsIgnoreCase(signEvent.getLine(0)) || TownManager.TKTOWNS_REALESTATE_SIGN_HEADER.equalsIgnoreCase(signEvent.getLine(0))) {
     		try {
-				TownManager.get().handleSignEdit(signEvent.getPlayer(), signEvent);
-				signEvent.getPlayer().sendMessage("Town created.  Welcome Mayor");
+				GenericModificationResponse gmr = TownManager.get().handleSignEdit(signEvent.getPlayer(), signEvent);
+				signEvent.getPlayer().sendMessage(gmr.getMessage());
 			} catch (IndexOutOfBoundsException e) {
 				Player player = signEvent.getPlayer();
 				player.sendMessage(TKTOWNS_ERROR_HEADER);

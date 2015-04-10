@@ -7,6 +7,9 @@ public class GeneralConfig {
 	protected int townUpkeepInterval = 1;
 	protected TimeUnit townUpkeepUnit = TimeUnit.DAYS;
 	protected int townUpkeepCost = 10;
+	
+	protected String townMarker = "[Town]";
+	protected String realestateMarker = "[Realestate]";
 
 	public int getTownCost() {
 		return townCost;
@@ -38,5 +41,21 @@ public class GeneralConfig {
 
 	public void setTownUpkeepCost(int townUpkeepCost) {
 		this.townUpkeepCost = townUpkeepCost;
+	}
+
+	public String getTownMarker() {
+		return townMarker;
+	}
+
+	public void setTownMarker(String townMarker) {
+		this.townMarker = townMarker;
+	}
+
+	public String getRealestateMarker() {
+		return realestateMarker;
+	}
+
+	public void setRealestateMarker(String realestateMarker) {
+		this.realestateMarker = realestateMarker;
 	}
 }

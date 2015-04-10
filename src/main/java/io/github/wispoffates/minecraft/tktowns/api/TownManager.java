@@ -36,7 +36,8 @@ import com.google.common.base.Optional;
 
 public class TownManager {
 	public final static String TKTOWNS_METADATA_TAG 	= "TKTowns";
-	public static String TKTOWNS_SIGN_HEADER           	= "[TKTowns]"; //not final so I can make it configurable
+	public static String TKTOWNS_TOWN_SIGN_HEADER       = "[Town]"; //not final so I can make it configurable
+	public static String TKTOWNS_REALESTATE_SIGN_HEADER = "[Realestate]";
 	
 	//singleton instance
 	protected static TownManager instance;
@@ -92,7 +93,7 @@ public class TownManager {
 		townsById.put(town.getId(), town);
 		//save the town
 		this.config.saveTown(town);
-		return new TownModificationResponse(town.getName() + " established.",town,true);
+		return new TownModificationResponse(town.getName() + " established. Welcome Mayor.",town,true);
 	}
 
 	public TownModificationResponse deleteTown(Player player, String name) throws TKTownsException {
@@ -424,7 +425,7 @@ public class TownManager {
 				break;
 			}
 		}
-		return Optional.of(ret) ;
+		return Optional.fromNullable(ret) ;
 	}
 	
 	protected Optional<RealEstate> getRealEstateAtLocation(Location loc) {
@@ -440,7 +441,7 @@ public class TownManager {
 				}
 			}
 		}
-		return Optional.of(ret);
+		return Optional.fromNullable(ret);
 	}
 	
 	protected Set<Town> getTownsAPlayerIsResident( Player player ) {
@@ -476,7 +477,20 @@ public class TownManager {
 
 	//TODO: Maybe this should be up in the plugin in layer in not down here in the api?
 	public GenericModificationResponse handleSignEdit(Player player,SignChangeEvent signEvent) throws IndexOutOfBoundsException, TKTownsException {
-		if("[Create Town]".equalsIgnoreCase(signEvent.getLine(1))) {
+		if(TownManager.TKTOWNS_TOWN_SIGN_HEADER.equalsIgnoreCase(signEvent.getLine(0))) {
+			//Handle town related signs
+			return this.handleTownSignEdit(player, signEvent);
+		} else if(TownManager.TKTOWNS_REALESTATE_SIGN_HEADER.equalsIgnoreCase(signEvent.getLine(0))) {
+			//Handle realestate related signs
+			return this.handleRealestateSignEdit(player, signEvent);
+		} else {
+			//what?
+			return new GenericModificationResponse("Unknown sign command! :: " + signEvent.getLine(1),false);
+		}
+	}
+	
+	public GenericModificationResponse handleTownSignEdit(Player player,SignChangeEvent signEvent) throws IndexOutOfBoundsException, TKTownsException {
+		if("[Create]".equalsIgnoreCase(signEvent.getLine(1))) {
 			if(signEvent.getLine(2) != null) {
 				GenericModificationResponse tmr = this.createTown(player, signEvent.getBlock().getLocation(), signEvent.getLine(2));
 				signEvent.setLine(0, "Welcome to");
@@ -491,7 +505,12 @@ public class TownManager {
 			}
 		}
 		
-		if("[Create Realestate]".equalsIgnoreCase(signEvent.getLine(1))) {
+		//TODO: Show some real help here...
+		return new TownModificationResponse("Unknown sign command! :: " + signEvent.getLine(1),null,false);
+	}
+	
+	public GenericModificationResponse handleRealestateSignEdit(Player player,SignChangeEvent signEvent) throws IndexOutOfBoundsException, TKTownsException {
+		if("[Create]".equalsIgnoreCase(signEvent.getLine(1))) {
 			if(signEvent.getLine(2) != null) {
 				GenericModificationResponse tmr = this.createRealestate(player, signEvent.getBlock().getLocation(), signEvent.getLine(2));
 				signEvent.setLine(0, "Welcome to");
@@ -550,7 +569,6 @@ public class TownManager {
 				throw new TKTownsException("The second line must be the lease amount.  The third line must be the down payment.");
 			}
 		}
-		
 		//TODO: Show some real help here...
 		return new TownModificationResponse("Unknown sign command! :: " + signEvent.getLine(1),null,false);
 	}
