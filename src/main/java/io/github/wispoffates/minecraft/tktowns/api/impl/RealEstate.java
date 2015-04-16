@@ -70,7 +70,7 @@ public class RealEstate {
 		if(parent != null) {
 			this.parent = Optional.of(parent);
 			this.parentId = parent.getId();
-			this.owner = Optional.of(Bukkit.getOfflinePlayer(parentId));
+			this.owner = Optional.of(Bukkit.getOfflinePlayer(parent.getMayor().getUniqueId()));
 		} else {
 			this.owner = Optional.of(Bukkit.getOfflinePlayer(claim.ownerID));
 		}
