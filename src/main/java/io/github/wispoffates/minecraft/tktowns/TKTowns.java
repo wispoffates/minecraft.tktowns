@@ -241,7 +241,7 @@ public class TKTowns extends JavaPlugin implements Listener {
 					Set<RealEstate> re = TKTowns.townManager.listRealestate(player, null);
 					player.sendMessage(TKTowns.formatRealestate(re, false));
 				} else if(args[0].equalsIgnoreCase("list")) {
-					Set<RealEstate> reals = TKTowns.townManager.listRealestate(player, argsList.get(1));
+					Set<RealEstate> reals = TKTowns.townManager.listRealestate(player, null);
 					player.sendMessage(TKTowns.formatRealestate(reals, false));
 				}  else {
 					Set<RealEstate> re = TKTowns.townManager.listRealestate(player, argsList.get(1));

@@ -75,7 +75,7 @@ public class RealEstate {
 			this.owner = Optional.of(Bukkit.getOfflinePlayer(claim.ownerID));
 		}
 		this.name = name;
-		this.ownerId = claim.ownerID;
+		this.ownerId = this.owner.get().getUniqueId();
 		this.nameSignLocation = loc;
 		this.id = UUID.randomUUID();
 	}

@@ -231,7 +231,7 @@ public class TownManager {
 		if(!re.isPresent()) {
 			throw new TKTownsException("Your are not standing in a piece of RealEstate.");
 		}
-		if(!re.get().getOwner().equals(player.getUniqueId())) {
+		if(!re.get().getOwner().getUniqueId().equals(player.getUniqueId())) {
 			throw new TKTownsException("You do not own this RealEstate.");
 		}
 		if(re.get().getStatus() != RealEstate.Status.OWNED) {
@@ -258,7 +258,7 @@ public class TownManager {
 		if(re.getParent() == null) {
 			throw new TKTownsException("You cannot sell your town!");
 		}
-		if(!re.getOwner().equals(player.getUniqueId())) {
+		if(!re.getOwner().getUniqueId().equals(player.getUniqueId())) {
 			throw new TKTownsException("You do not own this RealEstate.");
 		}
 		if(re.getStatus() != RealEstate.Status.OWNED) {
@@ -283,7 +283,7 @@ public class TownManager {
 			throw new TKTownsException("Your are not standing in a piece of RealEstate.");
 		}
 		RealEstate re = reOp.get();
-		if(!re.getOwner().equals(player.getUniqueId())) {
+		if(!re.getOwner().getUniqueId().equals(player.getUniqueId())) {
 			throw new TKTownsException("You do not own this RealEstate.");
 		}
 		if(re.getStatus() != RealEstate.Status.OWNED) {
