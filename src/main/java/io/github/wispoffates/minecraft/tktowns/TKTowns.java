@@ -163,28 +163,37 @@ public class TKTowns extends JavaPlugin implements Listener {
      * @return true if we the event should be cancelled
      */
     protected boolean handleTKTownsSign(Optional<Player> player, Block block) {
-    	//is the block a sign?
-    	 if (block.getType() == Material.SIGN && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
-    		 return TownManager.get().handleSignBreak(player, block);
-         }
-    	 
-    	 if (block.getType() == Material.SIGN_POST && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
-    		 return TownManager.get().handleSignBreak(player, block);
-         }
-    	 
-    	 //is the block a sign?
-    	 if (block.getType() == Material.WALL_SIGN && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
-    		 return TownManager.get().handleSignBreak(player, block);
-         }
-    	 
-    	 //Is a sign attached to it?
-    	for (BlockFace f : BlockFace.values()) {
-    		Block relative = block.getRelative(f);
-            if (relative.getType() == Material.WALL_SIGN && !relative.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
-            	return TownManager.get().handleSignBreak(player, block);
-            }
-        }
-        return false;
+    	try {
+	    	//is the block a sign?
+	    	 if (block.getType() == Material.SIGN && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+	    		 return TownManager.get().handleSignBreak(player, block);
+	         }
+	    	 
+	    	 if (block.getType() == Material.SIGN_POST && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+	    		 return TownManager.get().handleSignBreak(player, block);
+	         }
+	    	 
+	    	 //is the block a sign?
+	    	 if (block.getType() == Material.WALL_SIGN && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+	    		 return TownManager.get().handleSignBreak(player, block);
+	         }
+	    	 
+	    	 //Is a sign attached to it?
+	    	for (BlockFace f : BlockFace.values()) {
+	    		Block relative = block.getRelative(f);
+	            if (relative.getType() == Material.WALL_SIGN && !relative.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+	            	return TownManager.get().handleSignBreak(player, block);
+	            }
+	        }
+	        return false;
+    	} catch (Exception e) {
+    		if(player.isPresent()) {
+    			player.get().sendMessage(TKTOWNS_ERROR_HEADER);
+				player.get().sendMessage(e.getClass().getName() + " :: " + e.getMessage());
+    		}
+			e.printStackTrace();
+			return true;
+		}
     }
     
     public boolean onCommand( CommandSender sender, Command cmd, String label, String[] args) {
