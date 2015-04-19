@@ -82,6 +82,9 @@ public class TownManager {
 		if(this.towns.containsKey(name)) {
 			throw new TKTownsException("A town with that name all ready exists.");
 		}
+		if(claim.parent != null || claim.ownerID == null) {
+			throw new TKTownsException("Towns can only be created from top level claims.");
+		}
 		if(!claim.ownerID.equals(player.getUniqueId())) {
 			throw new TKTownsException("You do not own this claim.");
 		}
