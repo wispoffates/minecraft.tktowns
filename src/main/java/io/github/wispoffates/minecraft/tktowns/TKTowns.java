@@ -35,6 +35,8 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -157,6 +159,18 @@ public class TKTowns extends JavaPlugin implements Listener {
     	}
     }
     
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent pie) {
+    	List<MetadataValue> mdv = pie.getClickedBlock().getMetadata(TownManager.TKTOWNS_METADATA_TAG);
+    	if(mdv == null || mdv.isEmpty()) {
+    		return; //bail quickly if this isn't the object we are looking for
+    	}
+    	for(MetadataValue val : mdv) {
+    		if(val.asString().equals("Sale sign!")) {
+    			pie.getPlayer().sendMessage("You clicked the sale sign! wooo!4");
+    		}
+    	}
+    }
     /**
      * 
      * @param block

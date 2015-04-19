@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>GriefPrevention</groupId>
 			<artifactId>GriefPrevention</artifactId>
-			<version>11.2.2</version>
+			<version>11.3.2</version>
 		</dependency>
 		<!--Spigot-API -->
 		<dependency>

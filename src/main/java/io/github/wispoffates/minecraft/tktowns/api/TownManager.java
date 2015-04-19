@@ -533,7 +533,7 @@ public class TownManager {
 				signEvent.setLine(2, null);
 				signEvent.setLine(3, null);
 				//TODO: Real meta data just setting this so that the break code can be tested.
-				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Town sign!")));
+				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Sale sign!")));
 				return tmr;
 			} else {
 				throw new TKTownsException("The second line must be the amount to sell the realestate for.");
@@ -548,7 +548,7 @@ public class TownManager {
 				signEvent.setLine(2, null);
 				signEvent.setLine(3, null);
 				//TODO: Real meta data just setting this so that the break code can be tested.
-				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Town sign!")));
+				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Sale sign!")));
 				return tmr;
 			} else {
 				throw new TKTownsException("The second line must be the lease amount.  The third line must be the down payment.  The fourth line must be the length of the lease in days");
@@ -563,7 +563,7 @@ public class TownManager {
 				signEvent.setLine(2, null);
 				signEvent.setLine(3, null);
 				//TODO: Real meta data just setting this so that the break code can be tested.
-				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Town sign!")));
+				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Sale sign!")));
 				return tmr;
 			} else {
 				throw new TKTownsException("The second line must be the lease amount.  The third line must be the down payment.");
