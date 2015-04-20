@@ -1,6 +1,5 @@
 package io.github.wispoffates.minecraft.tktowns.api;
 
-import io.github.wispoffates.minecraft.tktowns.TKTowns;
 import io.github.wispoffates.minecraft.tktowns.api.impl.Outpost;
 import io.github.wispoffates.minecraft.tktowns.api.impl.RealEstate;
 import io.github.wispoffates.minecraft.tktowns.api.impl.RealEstate.SignLocation;
@@ -30,7 +29,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.metadata.FixedMetadataValue;
 
 import com.google.common.base.Optional;
 
@@ -500,8 +498,6 @@ public class TownManager {
 				signEvent.setLine(1, signEvent.getLine(2));
 				signEvent.setLine(2, null);
 				signEvent.setLine(3, null);
-				//TODO: Real meta data just setting this so that the break code can be tested.
-				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Town sign!")));
 				return tmr;
 			} else {
 				throw new TKTownsException("The second line must be the name of the new town.");
@@ -520,8 +516,6 @@ public class TownManager {
 				signEvent.setLine(1, signEvent.getLine(2));
 				signEvent.setLine(2, null);
 				signEvent.setLine(3, null);
-				//TODO: Real meta data just setting this so that the break code can be tested.
-				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Town sign!")));
 				return tmr;
 			} else {
 				throw new TKTownsException("The second line must be the name of the realestate.");
@@ -535,8 +529,6 @@ public class TownManager {
 				signEvent.setLine(1, signEvent.getLine(2));
 				signEvent.setLine(2, null);
 				signEvent.setLine(3, null);
-				//TODO: Real meta data just setting this so that the break code can be tested.
-				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Sale sign!")));
 				return tmr;
 			} else {
 				throw new TKTownsException("The second line must be the amount to sell the realestate for.");
@@ -550,8 +542,6 @@ public class TownManager {
 				signEvent.setLine(1, signEvent.getLine(2));
 				signEvent.setLine(2, null);
 				signEvent.setLine(3, null);
-				//TODO: Real meta data just setting this so that the break code can be tested.
-				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Sale sign!")));
 				return tmr;
 			} else {
 				throw new TKTownsException("The second line must be the lease amount.  The third line must be the down payment.  The fourth line must be the length of the lease in days");
@@ -565,8 +555,6 @@ public class TownManager {
 				signEvent.setLine(1, signEvent.getLine(2));
 				signEvent.setLine(2, null);
 				signEvent.setLine(3, null);
-				//TODO: Real meta data just setting this so that the break code can be tested.
-				signEvent.getBlock().setMetadata(TownManager.TKTOWNS_METADATA_TAG, new FixedMetadataValue(TKTowns.plugin,new String("Sale sign!")));
 				return tmr;
 			} else {
 				throw new TKTownsException("The second line must be the lease amount.  The third line must be the down payment.");
@@ -577,10 +565,41 @@ public class TownManager {
 	}
 	
 	public boolean handleSignBreak(Optional<Player> p, Block block) {
-		if(p.isPresent()) {
-			p.get().sendMessage("TKTowns: You can not break town signs");
+		if(isTownSign(block)) {
+			if(p.isPresent()) {
+				p.get().sendMessage("TKTowns: You can not break town signs");
+			}
+			return true;
 		}
-		return true;
+		return false;
 	}
+	
+	public boolean isTownSign(Block block) {
+		Optional<RealEstate> ore = this.getRealEstateAtLocation(block.getLocation());
+		if(ore.isPresent()) {
+			RealEstate re = ore.get();
+			Block sign = re.getSign();
+			if(block.equals(sign)) {
+				return true;
+			}
+			sign = re.getSaleSign();
+			if(block.equals(sign)) {
+				return true;
+			}
+		}
+		return false;
+ 	}
+	
+	public boolean isForSaleSign(Block block) {
+		Optional<RealEstate> ore = this.getRealEstateAtLocation(block.getLocation());
+		if(ore.isPresent()) {
+			RealEstate re = ore.get();
+			Block sign = re.getSaleSign();
+			if(block.equals(sign)) {
+				return true;
+			}
+		}
+		return false;
+ 	}
 	
 }

@@ -161,14 +161,8 @@ public class TKTowns extends JavaPlugin implements Listener {
     
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent pie) {
-    	List<MetadataValue> mdv = pie.getClickedBlock().getMetadata(TownManager.TKTOWNS_METADATA_TAG);
-    	if(mdv == null || mdv.isEmpty()) {
-    		return; //bail quickly if this isn't the object we are looking for
-    	}
-    	for(MetadataValue val : mdv) {
-    		if(val.asString().equals("Sale sign!")) {
-    			pie.getPlayer().sendMessage("You clicked the sale sign! wooo!4");
-    		}
+    	if( TownManager.get().isForSaleSign(pie.getClickedBlock())) {
+    		pie.getPlayer().sendMessage("You clicked the sale sign! wooo!");
     	}
     }
     /**
@@ -179,23 +173,23 @@ public class TKTowns extends JavaPlugin implements Listener {
     protected boolean handleTKTownsSign(Optional<Player> player, Block block) {
     	try {
 	    	//is the block a sign?
-	    	 if (block.getType() == Material.SIGN && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+	    	 if (block.getType() == Material.SIGN) {
 	    		 return TownManager.get().handleSignBreak(player, block);
 	         }
 	    	 
-	    	 if (block.getType() == Material.SIGN_POST && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+	    	 if (block.getType() == Material.SIGN_POST) {
 	    		 return TownManager.get().handleSignBreak(player, block);
 	         }
 	    	 
 	    	 //is the block a sign?
-	    	 if (block.getType() == Material.WALL_SIGN && !block.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+	    	 if (block.getType() == Material.WALL_SIGN) {
 	    		 return TownManager.get().handleSignBreak(player, block);
 	         }
 	    	 
 	    	 //Is a sign attached to it?
 	    	for (BlockFace f : BlockFace.values()) {
 	    		Block relative = block.getRelative(f);
-	            if (relative.getType() == Material.WALL_SIGN && !relative.getMetadata(TownManager.TKTOWNS_METADATA_TAG).isEmpty()) {
+	            if (relative.getType() == Material.WALL_SIGN) {
 	            	return TownManager.get().handleSignBreak(player, block);
 	            }
 	        }
