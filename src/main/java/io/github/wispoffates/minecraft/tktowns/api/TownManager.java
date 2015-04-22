@@ -486,8 +486,7 @@ public class TownManager {
 			return this.handleRealestateSignEdit(player, signEvent);
 		} else {
 			//what?
-			return new GenericModificationResponse("Unknown sign command! :: " + signEvent.getLine(1),false);
-		}
+			return new GenericModificationResponse("Unknown sign command! :: " + signEvent.ge
 	}
 	
 	public GenericModificationResponse handleTownSignEdit(Player player,SignChangeEvent signEvent) throws IndexOutOfBoundsException, TKTownsException {
