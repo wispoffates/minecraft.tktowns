@@ -486,7 +486,8 @@ public class TownManager {
 			return this.handleRealestateSignEdit(player, signEvent);
 		} else {
 			//what?
-			return new GenericModificationResponse("Unknown sign command! :: " + signEvent.ge
+			return new GenericModificationResponse("Unknown sign command! :: " + signEvent.getLine(0),false);
+		}
 	}
 	
 	public GenericModificationResponse handleTownSignEdit(Player player,SignChangeEvent signEvent) throws IndexOutOfBoundsException, TKTownsException {
@@ -571,6 +572,15 @@ public class TownManager {
 			return true;
 		}
 		return false;
+	}
+	
+	public GenericModificationResponse handleBuyChat(SignLocation loc, Player buyer) throws TKTownsException {
+		Optional<RealEstate> opReal = TownManager.get().getRealEstateAtLocation(loc.asLocation());
+		if(!opReal.isPresent()) {
+			throw new TKTownsException("Error: Sign is no longer in a for sale plot");
+		}
+		RealEstate re = opReal.get();
+		return null;
 	}
 	
 	public boolean isTownSign(Block block) {
