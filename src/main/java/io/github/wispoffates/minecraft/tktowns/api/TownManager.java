@@ -574,15 +574,6 @@ public class TownManager {
 		return false;
 	}
 	
-	public GenericModificationResponse handleBuyChat(SignLocation loc, Player buyer) throws TKTownsException {
-		Optional<RealEstate> opReal = TownManager.get().getRealEstateAtLocation(loc.asLocation());
-		if(!opReal.isPresent()) {
-			throw new TKTownsException("Error: Sign is no longer in a for sale plot");
-		}
-		RealEstate re = opReal.get();
-		return null;
-	}
-	
 	public boolean isTownSign(Block block) {
 		Optional<RealEstate> ore = this.getRealEstateAtLocation(block.getLocation());
 		if(ore.isPresent()) {
